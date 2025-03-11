@@ -23,21 +23,23 @@ export default function EmailCreator() {
   const [currentHtml, setCurrentHtml] = useState('');
   const [showPreview, setShowPreview] = useState(false);
 
-  const generateEmail = async (operation: 'start_over' | 'update') => {
-    if (!prompt.trim()) {
-      alert('Please enter a description of what you want to create.');
-      return;
-    }
+  const generateEmail = async () =>
+    // operation: 'start_over' | 'update'
+    {
+      if (!prompt.trim()) {
+        alert('Please enter a description of what you want to create.');
+        return;
+      }
 
-    setIsLoading(true);
-    setShowPreview(false);
+      setIsLoading(true);
+      setShowPreview(false);
 
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      try {
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Mock HTML response
-      const mockHtml = `
+        // Mock HTML response
+        const mockHtml = `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -104,15 +106,15 @@ export default function EmailCreator() {
         </html>
       `;
 
-      setCurrentHtml(mockHtml);
-      setShowPreview(true);
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error generating email. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        setCurrentHtml(mockHtml);
+        setShowPreview(true);
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error generating email. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   const copyHtmlCode = () => {
     navigator.clipboard
@@ -226,7 +228,10 @@ export default function EmailCreator() {
 
         <div className='flex flex-col sm:flex-row gap-4'>
           <Button
-            onClick={() => generateEmail('start_over')}
+            onClick={() =>
+              generateEmail()
+              // 'start_over'
+            }
             disabled={isLoading}
             className='flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
           >
@@ -235,7 +240,10 @@ export default function EmailCreator() {
 
           {currentHtml && (
             <Button
-              onClick={() => generateEmail('update')}
+              onClick={() =>
+                generateEmail()
+                // 'update'
+              }
               disabled={isLoading}
               className='flex-1 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700'
             >

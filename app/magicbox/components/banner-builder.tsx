@@ -25,21 +25,24 @@ export default function BannerBuilder() {
   const [bannerHtml, setBannerHtml] = useState('');
   const [showPreview, setShowPreview] = useState(false);
 
-  const generateBanner = async (operation: 'start_over' | 'update') => {
-    if (!prompt.trim()) {
-      alert('Please enter a description of what you want to create.');
-      return;
-    }
+  const generateBanner = async () =>
+    // operation: 'start_over' | 'update'
 
-    setIsLoading(true);
-    setShowPreview(false);
+    {
+      if (!prompt.trim()) {
+        alert('Please enter a description of what you want to create.');
+        return;
+      }
 
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      setIsLoading(true);
+      setShowPreview(false);
 
-      // Mock HTML response for a banner
-      const mockHtml = `
+      try {
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        // Mock HTML response for a banner
+        const mockHtml = `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -109,15 +112,15 @@ export default function BannerBuilder() {
         </html>
       `;
 
-      setBannerHtml(mockHtml);
-      setShowPreview(true);
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error generating banner. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        setBannerHtml(mockHtml);
+        setShowPreview(true);
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error generating banner. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   const copyHtmlCode = () => {
     navigator.clipboard
@@ -244,7 +247,10 @@ export default function BannerBuilder() {
 
         <div className='flex flex-col sm:flex-row gap-4'>
           <Button
-            onClick={() => generateBanner('start_over')}
+            onClick={
+              () => generateBanner()
+              // 'start_over'
+            }
             disabled={isLoading}
             className='flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
           >
@@ -253,7 +259,10 @@ export default function BannerBuilder() {
 
           {bannerHtml && (
             <Button
-              onClick={() => generateBanner('update')}
+              onClick={() =>
+                generateBanner()
+                // 'update'
+              }
               disabled={isLoading}
               className='flex-1 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700'
             >
