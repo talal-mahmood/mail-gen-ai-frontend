@@ -6,7 +6,8 @@ export async function callSplashGenerateAPI(requestData: any): Promise<any> {
   }
 
   try {
-    const response = await fetch(`${baseUrl}/chat/splash-generate`, {
+    // ${baseUrl} (removed for it to work with vercel)
+    const response = await fetch(`/v1/chat/splash-generate`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
