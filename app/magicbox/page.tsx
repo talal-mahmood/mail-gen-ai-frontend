@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SplashGenerator from './components/splash-generator';
 import EmailCreator from './components/email-creator';
 import BannerBuilder from './components/banner-builder';
