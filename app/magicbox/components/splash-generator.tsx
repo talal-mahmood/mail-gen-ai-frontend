@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -16,12 +16,17 @@ import { Wand2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
 import { callSplashGenerateAPI } from '@/lib/api';
 
 export default function SplashGenerator() {
+  const [id, setId] = useState('');
   const [query, setQuery] = useState('');
   const [styleType, setStyleType] = useState('casual');
   const [buttonUrl, setButtonUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentHtml, setCurrentHtml] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+
+  useEffect(() => {
+    console.log('id was set to: ', id);
+  }, [id]);
 
   const generateSplashPage = async (operation: 'start_over' | 'update') => {
     if (!query.trim()) {
@@ -41,14 +46,17 @@ export default function SplashGenerator() {
 
     if (operation === 'update') {
       requestData.previous_html = currentHtml;
+      requestData.id = id;
     }
 
     try {
       const data = await callSplashGenerateAPI(requestData);
+      console.log('data is: ', data);
       const htmlOutput = data.html.replace(/```html|```/g, '').trim();
       setCurrentHtml(htmlOutput);
       setShowPreview(true);
       setQuery('');
+      setId(data.id);
     } catch (error: any) {
       console.error('Error:', error);
       alert(error.message || 'Error connecting to API. Please try again.');
@@ -70,11 +78,10 @@ export default function SplashGenerator() {
   };
 
   const openPreviewInNewTab = () => {
-    const newTab = window.open('');
-    if (newTab) {
-      newTab.document.write(currentHtml);
-      newTab.document.close();
-    }
+    // Use window.location.origin to get the current domain
+    const baseUrl = window.location.origin;
+    const previewUrl = `${baseUrl}/splash/${id}`;
+    window.open(previewUrl, '_blank');
   };
 
   return (

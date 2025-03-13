@@ -13,108 +13,49 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Wand2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
+import { callEmailGenerateAPI } from '@/lib/api';
+import { formatEmailContent } from '@/lib/utils';
 
 export default function EmailCreator() {
   const [prompt, setPrompt] = useState('');
   const [url, setUrl] = useState('');
   const [emailType, setEmailType] = useState('marketing');
-  const [subject, setSubject] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentHtml, setCurrentHtml] = useState('');
   const [showPreview, setShowPreview] = useState(false);
 
-  const generateEmail = async () =>
-    // operation: 'start_over' | 'update'
-    {
-      if (!prompt.trim()) {
-        alert('Please enter a description of what you want to create.');
-        return;
-      }
+  const generateEmail = async (operation: 'start_over' | 'update') => {
+    if (!prompt.trim()) {
+      alert('Please enter a description of what you want to create.');
+      return;
+    }
 
-      setIsLoading(true);
-      setShowPreview(false);
+    setIsLoading(true);
+    setShowPreview(false);
 
-      try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        // Mock HTML response
-        const mockHtml = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Email Template</title>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              line-height: 1.6;
-              color: #333;
-              max-width: 600px;
-              margin: 0 auto;
-              padding: 20px;
-            }
-            .header {
-              background-color: #4F46E5;
-              color: white;
-              padding: 20px;
-              text-align: center;
-              border-radius: 5px 5px 0 0;
-            }
-            .content {
-              padding: 20px;
-              background-color: #f9f9f9;
-              border: 1px solid #ddd;
-            }
-            .footer {
-              text-align: center;
-              padding: 10px;
-              font-size: 12px;
-              color: #666;
-              background-color: #f1f1f1;
-              border-radius: 0 0 5px 5px;
-            }
-            .button {
-              display: inline-block;
-              background-color: #4F46E5;
-              color: white;
-              padding: 10px 20px;
-              text-decoration: none;
-              border-radius: 5px;
-              margin: 20px 0;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>${subject || 'Your Email Subject'}</h1>
-          </div>
-          <div class="content">
-            <p>Hello there,</p>
-            <p>This is a generated email based on your prompt: "${prompt}"</p>
-            <p>Email type: ${emailType}</p>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
-            <a href="#" class="button">Call to Action</a>
-            <p>Best regards,<br>Your Name</p>
-          </div>
-          <div class="footer">
-            <p>© 2023 Your Company. All rights reserved.</p>
-            <p><a href="#">Unsubscribe</a> | <a href="#">View in browser</a></p>
-          </div>
-        </body>
-        </html>
-      `;
-
-        setCurrentHtml(mockHtml);
-        setShowPreview(true);
-      } catch (error) {
-        console.error('Error:', error);
-        alert('Error generating email. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
+    const requestData = {
+      prompt: prompt,
+      website_url: url,
+      operation: 'generate',
+      previous_email: operation === 'update' ? currentHtml : '',
     };
+
+    try {
+      const data = await callEmailGenerateAPI(requestData);
+
+      // Convert plain text email to basic HTML format
+      const htmlOutput = formatEmailContent(data);
+
+      setCurrentHtml(htmlOutput);
+      setShowPreview(true);
+      setPrompt('');
+    } catch (error: any) {
+      console.error('Error:', error);
+      alert(error.message || 'Error connecting to API. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const copyHtmlCode = () => {
     navigator.clipboard
@@ -171,7 +112,7 @@ export default function EmailCreator() {
             rows={3}
           />
         </div>
-        <div className='mb-6'>
+        {/* <div className='mb-6'>
           <Label
             htmlFor='url'
             className='block mb-2 font-semibold text-blue-300'
@@ -187,7 +128,7 @@ export default function EmailCreator() {
             placeholder='https://example.com'
             required
           />
-        </div>
+        </div> */}
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
           <div>
             <Label
@@ -208,8 +149,25 @@ export default function EmailCreator() {
               </SelectContent>
             </Select>
           </div>
-
           <div>
+            <Label
+              htmlFor='url'
+              className='block mb-2 font-semibold text-blue-300'
+            >
+              URL to Scrape:
+            </Label>
+            <Input
+              id='url'
+              type='url'
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className='w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
+              placeholder='https://example.com'
+              required
+            />
+          </div>
+
+          {/* <div>
             <Label
               htmlFor='subject'
               className='block mb-2 font-semibold text-blue-300'
@@ -223,15 +181,12 @@ export default function EmailCreator() {
               className='w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
               placeholder='Enter email subject line'
             />
-          </div>
+          </div> */}
         </div>
 
         <div className='flex flex-col sm:flex-row gap-4'>
           <Button
-            onClick={() =>
-              generateEmail()
-              // 'start_over'
-            }
+            onClick={() => generateEmail('start_over')}
             disabled={isLoading}
             className='flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
           >
@@ -240,10 +195,7 @@ export default function EmailCreator() {
 
           {currentHtml && (
             <Button
-              onClick={() =>
-                generateEmail()
-                // 'update'
-              }
+              onClick={() => generateEmail('update')}
               disabled={isLoading}
               className='flex-1 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700'
             >

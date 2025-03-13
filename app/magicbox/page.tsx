@@ -30,36 +30,37 @@ export default function MagicBox() {
                 className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white'
               >
                 <Sparkles className='mr-2 h-4 w-4' />
-                Splash Generator
+                Splash <span className='hidden ml-1 sm:inline'>Generator</span>
               </TabsTrigger>
               <TabsTrigger
                 value='email'
                 className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white'
               >
                 <Mail className='mr-2 h-4 w-4' />
-                Email Creator
+                Email <span className='hidden ml-1 sm:inline'>Creator</span>
               </TabsTrigger>
               <TabsTrigger
                 value='banner'
                 className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white'
               >
                 <Image className='mr-2 h-4 w-4' />
-                Banner Builder
+                Banner <span className='hidden ml-1 sm:inline'>Builder</span>
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value='splash' className='mt-0'>
-            <SplashGenerator />
-          </TabsContent>
-
-          <TabsContent value='email' className='mt-0'>
-            <EmailCreator />
-          </TabsContent>
-
-          <TabsContent value='banner' className='mt-0'>
-            <BannerBuilder />
-          </TabsContent>
+          {/* Modified content area */}
+          <div className='relative'>
+            <div style={{ display: activeTab === 'splash' ? 'block' : 'none' }}>
+              <SplashGenerator />
+            </div>
+            <div style={{ display: activeTab === 'email' ? 'block' : 'none' }}>
+              <EmailCreator />
+            </div>
+            <div style={{ display: activeTab === 'banner' ? 'block' : 'none' }}>
+              <BannerBuilder />
+            </div>
+          </div>
         </Tabs>
       </div>
     </div>
