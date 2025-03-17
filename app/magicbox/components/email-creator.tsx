@@ -25,6 +25,7 @@ export default function EmailCreator() {
   const [showPreview, setShowPreview] = useState(false);
 
   const generateEmail = async (operation: 'start_over' | 'update') => {
+    alert(operation);
     if (!prompt.trim()) {
       alert('Please enter a description of what you want to create.');
       return;
@@ -36,10 +37,10 @@ export default function EmailCreator() {
     const requestData = {
       prompt: prompt,
       website_url: url,
-      operation: 'generate',
+      operation: operation === 'update' ? 'refine' : 'generate',
       previous_email: operation === 'update' ? currentHtml : '',
     };
-
+    console.log(requestData);
     try {
       const data = await callEmailGenerateAPI(requestData);
 
