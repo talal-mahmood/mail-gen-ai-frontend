@@ -12,10 +12,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Wand2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
+import {
+  Wand2,
+  RefreshCw,
+  Copy,
+  // , ExternalLink
+} from 'lucide-react';
 import { callEmailGenerateAPI } from '@/lib/api';
-import { formatEmailContent } from '@/lib/utils';
-import ReactMarkdown from 'react-markdown';
+// import { formatEmailContent } from '@/lib/utils';
+// import ReactMarkdown from 'react-markdown';
 
 export default function EmailCreator() {
   const [prompt, setPrompt] = useState('');
@@ -63,17 +68,17 @@ export default function EmailCreator() {
     }
   };
 
-  const copyHtmlCode = () => {
-    navigator.clipboard
-      .writeText(currentHtml)
-      .then(() => {
-        alert('HTML copied to clipboard!');
-      })
-      .catch((err) => {
-        console.error('Failed to copy: ', err);
-        alert('Failed to copy HTML code. Please try again.');
-      });
-  };
+  // const copyHtmlCode = () => {
+  //   navigator.clipboard
+  //     .writeText(currentHtml)
+  //     .then(() => {
+  //       alert('HTML copied to clipboard!');
+  //     })
+  //     .catch((err) => {
+  //       console.error('Failed to copy: ', err);
+  //       alert('Failed to copy HTML code. Please try again.');
+  //     });
+  // };
   const copyPlainText = () => {
     const tempEl = document.createElement('div');
     tempEl.innerHTML = currentHtml;
@@ -90,13 +95,13 @@ export default function EmailCreator() {
       });
   };
 
-  const openPreviewInNewTab = () => {
-    const newTab = window.open('');
-    if (newTab) {
-      newTab.document.write(currentHtml);
-      newTab.document.close();
-    }
-  };
+  // const openPreviewInNewTab = () => {
+  //   const newTab = window.open('');
+  //   if (newTab) {
+  //     newTab.document.write(currentHtml);
+  //     newTab.document.close();
+  //   }
+  // };
 
   return (
     <div className='space-y-8'>
