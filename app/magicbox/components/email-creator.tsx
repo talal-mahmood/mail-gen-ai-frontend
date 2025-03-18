@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import {
   Wand2,
@@ -19,19 +19,19 @@ import {
   // , ExternalLink
 } from 'lucide-react';
 import { callEmailGenerateAPI } from '@/lib/api';
+import { convertEmailMarkdownToHtml } from '@/lib/utils';
 // import { formatEmailContent } from '@/lib/utils';
-// import ReactMarkdown from 'react-markdown';
 
 export default function EmailCreator() {
   const [prompt, setPrompt] = useState('');
   const [url, setUrl] = useState('');
-  const [emailType, setEmailType] = useState('marketing');
+  // const [emailType, setEmailType] = useState('marketing');
   const [isLoading, setIsLoading] = useState(false);
   const [currentHtml, setCurrentHtml] = useState('');
   const [showPreview, setShowPreview] = useState(false);
 
   const generateEmail = async (operation: 'start_over' | 'update') => {
-    alert(operation);
+    // alert(operation);
     if (!prompt.trim()) {
       alert('Please enter a description of what you want to create.');
       return;
@@ -52,9 +52,10 @@ export default function EmailCreator() {
 
       // Convert plain text email to basic HTML format
       // const htmlOutput = formatEmailContent(data);
-      const markdownContent = data.email
-        .replace(/^```markdown\n/, '')
-        .replace(/\n```$/, '');
+      // const markdownContent = data.email
+      //   .replace(/^```markdown\n/, '')
+      //   .replace(/\n```$/, '');
+      const markdownContent = convertEmailMarkdownToHtml(data);
       setCurrentHtml(markdownContent);
       // setCurrentHtml(htmlOutput);
 
@@ -140,8 +141,8 @@ export default function EmailCreator() {
             required
           />
         </div> */}
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
-          <div>
+        <div className='grid grid-cols-1 //md:grid-cols-2 gap-4 mb-6'>
+          {/* <div>
             <Label
               htmlFor='email_type'
               className='block mb-2 font-semibold text-blue-300'
@@ -159,7 +160,7 @@ export default function EmailCreator() {
                 <SelectItem value='welcome'>Welcome</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
           <div>
             <Label
               htmlFor='url'
@@ -257,7 +258,7 @@ export default function EmailCreator() {
             </div>
           </div>
           <div className='w-full h-[500px] bg-black rounded-lg overflow-hidden'>
-            <pre className='w-full h-[500px] p-4 overflow-auto bg-gray-900 text-gray-100 rounded-lg'>
+            <pre className='w-full h-[500px] p-4 overflow-auto bg-gray-900 text-gray-100 rounded-lg text-wrap'>
               {currentHtml}
             </pre>
             {/* <iframe

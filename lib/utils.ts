@@ -108,3 +108,48 @@ export function formatEmailContent(data: any) {
 
   return htmlOutput;
 }
+
+export function convertEmailMarkdownToHtml(emailObj: {
+  email: string;
+}): string {
+  // Clean the markdown content
+  const markdown = emailObj.email
+    .replace(/^markdown\\n/, '') // Remove starting "markdown\n"
+    .replace(/\\n/g, '\n') // Convert escaped newlines
+    .replace(/\\"/g, '"') // Unescape quotes
+    .trim();
+
+  // Convert markdown elements to HTML
+  return (
+    markdown
+      // Headers (FROM/SUBJECT)
+      .replace(
+        /^(FROM:)(.*)$/gm,
+        '<h2 style="color: #2d3748; font-size: 1.25rem; margin-bottom: 0.5rem;">$1 <span style="font-weight: 600;">$2</span></h2>'
+      )
+      .replace(
+        /^(SUBJECT:)(.*)$/gm,
+        '<h1 style="color: #1a365d; font-size: 1.5rem; margin-bottom: 1rem;">$1<span style="color: #4299e1;">$2</span></h1>'
+      )
+
+      // Links
+      .replace(
+        /\[(.*?)\]\((.*?)\)/g,
+        '<a href="$2" style="color: #4299e1; text-decoration: underline;">$1</a>'
+      )
+
+      // Bold text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+
+      // Line breaks and paragraphs
+      .split('\n\n')
+      .map((paragraph) => {
+        if (paragraph.trim() === '') return '';
+        return `<p style="margin-bottom: 1rem; line-height: 1.5; color: #4a5568;">${paragraph}</p>`;
+      })
+      .join('\n')
+
+      // Preserve single newlines within paragraphs
+      .replace(/\n/g, '<br/>')
+  );
+}
