@@ -23,6 +23,8 @@ export default function SplashGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentHtml, setCurrentHtml] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [urlError, setUrlError] = useState('');
 
   useEffect(() => {
     console.log('id was set to: ', id);
@@ -31,6 +33,10 @@ export default function SplashGenerator() {
   const generateSplashPage = async (operation: 'start_over' | 'update') => {
     if (!query.trim()) {
       alert('Please enter a description of what you want to create.');
+      return;
+    }
+    if (urlError !== '') {
+      alert('Please enter a valid url.');
       return;
     }
 
@@ -105,46 +111,69 @@ export default function SplashGenerator() {
           />
         </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
-          <div>
-            <Label
-              htmlFor='style_type'
-              className='block mb-2 font-semibold text-blue-300'
-            >
-              Style Type:
-            </Label>
-            <Select value={styleType} onValueChange={setStyleType}>
-              <SelectTrigger className='w-full p-3 bg-gray-800 border border-gray-600 text-white'>
-                <SelectValue placeholder='Select style' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='casual'>Casual (Cosmic)</SelectItem>
-                <SelectItem value='professional'>Professional</SelectItem>
-              </SelectContent>
-            </Select>
+        {!showPreview && (
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
+            <div>
+              <Label
+                htmlFor='style_type'
+                className='block mb-2 font-semibold text-blue-300'
+              >
+                Style Type:
+              </Label>
+              <Select value={styleType} onValueChange={setStyleType}>
+                <SelectTrigger className='w-full p-3 bg-gray-800 border border-gray-600 text-white'>
+                  <SelectValue placeholder='Select style' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='casual'>Casual (Cosmic)</SelectItem>
+                  <SelectItem value='professional'>Professional</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <div>
+                <Label
+                  htmlFor='button_url'
+                  className='block mb-2 font-semibold text-blue-300'
+                >
+                  Button URL (Optional):
+                </Label>
+                <Input
+                  id='button_url'
+                  type='url'
+                  value={buttonUrl}
+                  onChange={(e) => {
+                    const newUrl = e.target.value;
+                    setButtonUrl(newUrl);
+                    // Validate that the URL starts with "http://" or "https://"
+                    if (newUrl && !/^https?:\/\//i.test(newUrl)) {
+                      setUrlError(
+                        'URL must start with "http://" or "https://".'
+                      );
+                    } else {
+                      setUrlError('');
+                    }
+                  }}
+                  className='w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
+                  placeholder='https://example.com'
+                />
+                {urlError && (
+                  <p className='mt-1 text-xs text-red-500'>{urlError}</p>
+                )}
+              </div>
+            </div>
           </div>
-
-          <div>
-            <Label
-              htmlFor='button_url'
-              className='block mb-2 font-semibold text-blue-300'
-            >
-              Button URL (Optional):
-            </Label>
-            <Input
-              id='button_url'
-              type='url'
-              value={buttonUrl}
-              onChange={(e) => setButtonUrl(e.target.value)}
-              className='w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
-              placeholder='https://example.com'
-            />
-          </div>
-        </div>
+        )}
 
         <div className='flex flex-col sm:flex-row gap-4'>
           <Button
-            onClick={() => generateSplashPage('start_over')}
+            onClick={() => {
+              if (showPreview) {
+                setShowConfirmation(true);
+              } else {
+                generateSplashPage('start_over');
+              }
+            }}
             disabled={isLoading}
             className='flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
           >
@@ -201,6 +230,43 @@ export default function SplashGenerator() {
               className='w-full h-full'
               title='Preview'
             />
+          </div>
+        </div>
+      )}
+      {showConfirmation && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+          <div className='bg-gray-800 p-6 rounded-lg max-w-md w-full'>
+            <h3 className='text-lg font-semibold text-white mb-4'>
+              Confirm Reset
+            </h3>
+            <p className='text-gray-300 mb-6'>
+              This will clear all current progress and start fresh. Are you
+              sure?
+            </p>
+            <div className='flex justify-end gap-3'>
+              <Button
+                variant='outline'
+                onClick={() => setShowConfirmation(false)}
+                className='bg-gray-600 hover:bg-gray-700 text-white'
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  // Reset all states
+                  setId('');
+                  setQuery('');
+                  setStyleType('casual');
+                  setButtonUrl('');
+                  setCurrentHtml('');
+                  setShowPreview(false);
+                  setShowConfirmation(false);
+                }}
+                className='bg-blue-600 hover:bg-blue-700'
+              >
+                Confirm
+              </Button>
+            </div>
           </div>
         </div>
       )}
