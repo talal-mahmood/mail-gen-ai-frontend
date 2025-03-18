@@ -259,8 +259,8 @@ export default function BannerBuilder() {
 
           {bannerHtml && (
             <Button
-              onClick={() =>
-                generateBanner()
+              onClick={
+                () => generateBanner()
                 // 'update'
               }
               disabled={isLoading}
