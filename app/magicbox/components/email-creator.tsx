@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Wand2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
 import { callEmailGenerateAPI } from '@/lib/api';
 import { formatEmailContent } from '@/lib/utils';
+import ReactMarkdown from 'react-markdown';
 
 export default function EmailCreator() {
   const [prompt, setPrompt] = useState('');
@@ -45,9 +46,13 @@ export default function EmailCreator() {
       const data = await callEmailGenerateAPI(requestData);
 
       // Convert plain text email to basic HTML format
-      const htmlOutput = formatEmailContent(data);
+      // const htmlOutput = formatEmailContent(data);
+      const markdownContent = data.email
+        .replace(/^```markdown\n/, '')
+        .replace(/\n```$/, '');
+      setCurrentHtml(markdownContent);
+      // setCurrentHtml(htmlOutput);
 
-      setCurrentHtml(htmlOutput);
       setShowPreview(true);
       setPrompt('');
     } catch (error: any) {
@@ -228,29 +233,33 @@ export default function EmailCreator() {
                 onClick={copyPlainText}
                 className='bg-green-600 hover:bg-green-700'
               >
-                <Copy className='mr-2 h-4 w-4' /> Copy Plain Text
+                <Copy className='mr-2 h-4 w-4' /> Copy
+                {/* Plain Text */}
               </Button>
-              <Button
+              {/* <Button
                 onClick={copyHtmlCode}
                 className='bg-blue-600 hover:bg-blue-700'
               >
                 <Copy className='mr-2 h-4 w-4' /> Copy HTML
-              </Button>
+              </Button> */}
 
-              <Button
+              {/* <Button
                 onClick={openPreviewInNewTab}
                 className='bg-purple-600 hover:bg-purple-700'
               >
                 <ExternalLink className='mr-2 h-4 w-4' /> Open in New Tab
-              </Button>
+              </Button> */}
             </div>
           </div>
-          <div className='w-full h-[500px] bg-white rounded-lg overflow-hidden'>
-            <iframe
+          <div className='w-full h-[500px] bg-black rounded-lg overflow-hidden'>
+            <pre className='w-full h-[500px] p-4 overflow-auto bg-gray-900 text-gray-100 rounded-lg'>
+              {currentHtml}
+            </pre>
+            {/* <iframe
               srcDoc={currentHtml}
               className='w-full h-full'
               title='Preview'
-            />
+            /> */}
           </div>
         </div>
       )}
