@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import ReactMarkdown from 'react-markdown';
 // import {
 //   Select,
 //   SelectContent,
@@ -19,7 +20,7 @@ import {
   // , ExternalLink
 } from 'lucide-react';
 import { callEmailGenerateAPI } from '@/lib/api';
-import { convertEmailMarkdownToHtml } from '@/lib/utils';
+// import { convertEmailMarkdownToHtml } from '@/lib/utils';
 // import { formatEmailContent } from '@/lib/utils';
 
 export default function EmailCreator() {
@@ -29,11 +30,17 @@ export default function EmailCreator() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentHtml, setCurrentHtml] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [urlError, setUrlError] = useState('');
 
   const generateEmail = async (operation: 'start_over' | 'update') => {
     // alert(operation);
     if (!prompt.trim()) {
       alert('Please enter a description of what you want to create.');
+      return;
+    }
+    if (urlError !== '') {
+      alert('Please enter a valid url.');
       return;
     }
 
@@ -52,10 +59,11 @@ export default function EmailCreator() {
 
       // Convert plain text email to basic HTML format
       // const htmlOutput = formatEmailContent(data);
-      // const markdownContent = data.email
-      //   .replace(/^```markdown\n/, '')
-      //   .replace(/\n```$/, '');
-      const markdownContent = convertEmailMarkdownToHtml(data);
+      const markdownContent = data.email
+        .replace(/^```markdown\n/, '')
+        .replace(/\n```$/, '');
+
+      // const markdownContent = convertEmailMarkdownToHtml(data);
       setCurrentHtml(markdownContent);
       // setCurrentHtml(htmlOutput);
 
@@ -141,8 +149,9 @@ export default function EmailCreator() {
             required
           />
         </div> */}
-        <div className='grid grid-cols-1 //md:grid-cols-2 gap-4 mb-6'>
-          {/* <div>
+        {!showPreview && (
+          <div className='grid grid-cols-1 //md:grid-cols-2 gap-4 mb-6'>
+            {/* <div>
             <Label
               htmlFor='email_type'
               className='block mb-2 font-semibold text-blue-300'
@@ -161,25 +170,37 @@ export default function EmailCreator() {
               </SelectContent>
             </Select>
           </div> */}
-          <div>
-            <Label
-              htmlFor='url'
-              className='block mb-2 font-semibold text-blue-300'
-            >
-              URL to Scrape:
-            </Label>
-            <Input
-              id='url'
-              type='url'
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className='w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
-              placeholder='https://example.com'
-              required
-            />
-          </div>
+            <div>
+              <Label
+                htmlFor='url'
+                className='block mb-2 font-semibold text-blue-300'
+              >
+                URL to Scrape:
+              </Label>
+              <Input
+                id='url'
+                type='url'
+                value={url}
+                onChange={(e) => {
+                  const newUrl = e.target.value;
+                  setUrl(newUrl);
+                  // Validate that the URL starts with "http://" or "https://"
+                  if (newUrl && !/^https?:\/\//i.test(newUrl)) {
+                    setUrlError('URL must start with "http://" or "https://".');
+                  } else {
+                    setUrlError('');
+                  }
+                }}
+                className='w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
+                placeholder='https://example.com'
+                required
+              />
+              {urlError && (
+                <p className='mt-1 text-xs text-red-500'>{urlError}</p>
+              )}
+            </div>
 
-          {/* <div>
+            {/* <div>
             <Label
               htmlFor='subject'
               className='block mb-2 font-semibold text-blue-300'
@@ -194,11 +215,18 @@ export default function EmailCreator() {
               placeholder='Enter email subject line'
             />
           </div> */}
-        </div>
+          </div>
+        )}
 
         <div className='flex flex-col sm:flex-row gap-4'>
           <Button
-            onClick={() => generateEmail('start_over')}
+            onClick={() => {
+              if (showPreview) {
+                setShowConfirmation(true);
+              } else {
+                generateEmail('start_over');
+              }
+            }}
             disabled={isLoading}
             className='flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
           >
@@ -257,15 +285,50 @@ export default function EmailCreator() {
               </Button> */}
             </div>
           </div>
-          <div className='w-full h-[500px] bg-black rounded-lg overflow-hidden'>
-            <pre className='w-full h-[500px] p-4 overflow-auto bg-gray-900 text-gray-100 rounded-lg text-wrap'>
+          <pre className='w-full h-[500px] p-4 overflow-auto bg-gray-900 text-gray-100 rounded-lg text-wrap'>
+            <ReactMarkdown>{currentHtml}</ReactMarkdown>
+            {/* <pre className='w-full h-[500px] p-4 overflow-auto bg-gray-900 text-gray-100 rounded-lg text-wrap'>
               {currentHtml}
-            </pre>
+            </pre> */}
             {/* <iframe
               srcDoc={currentHtml}
               className='w-full h-full'
               title='Preview'
             /> */}
+          </pre>
+        </div>
+      )}
+      {showConfirmation && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+          <div className='bg-gray-800 p-6 rounded-lg max-w-md w-full'>
+            <h3 className='text-lg font-semibold text-white mb-4'>
+              Confirm Reset
+            </h3>
+            <p className='text-gray-300 mb-6'>
+              This will clear the current email and start fresh. Are you sure?
+            </p>
+            <div className='flex justify-end gap-3'>
+              <Button
+                variant='outline'
+                onClick={() => setShowConfirmation(false)}
+                className='bg-gray-600 hover:bg-gray-700 text-white'
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  // Reset all states
+                  setPrompt('');
+                  setUrl('');
+                  setCurrentHtml('');
+                  setShowPreview(false);
+                  setShowConfirmation(false);
+                }}
+                className='bg-blue-600 hover:bg-blue-700'
+              >
+                Confirm
+              </Button>
+            </div>
           </div>
         </div>
       )}
