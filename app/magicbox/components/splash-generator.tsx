@@ -247,7 +247,7 @@ export default function SplashGenerator() {
               <Button
                 variant='outline'
                 onClick={() => setShowConfirmation(false)}
-                className='bg-gray-600 hover:bg-gray-700 text-white'
+                className='text-red-500 bg-transparent border-red-500 hover:bg-red-500 hover:text-white'
               >
                 Cancel
               </Button>

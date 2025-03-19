@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Wand2, RefreshCw, Copy } from 'lucide-react';
+import { Wand2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
 import { callEmailGenerateAPI } from '@/lib/api';
 
 export default function EmailCreator() {
@@ -62,15 +62,50 @@ export default function EmailCreator() {
       setIsLoading(false);
     }
   };
-
+  const copyHtmlCode = () => {
+    navigator.clipboard
+      .writeText(currentHtml)
+      .then(() => {
+        alert('HTML copied to clipboard!');
+      })
+      .catch((err) => {
+        console.error('Failed to copy: ', err);
+        alert('Failed to copy HTML code. Please try again.');
+      });
+  };
   const copyPlainText = () => {
-    const tempEl = document.createElement('div');
-    tempEl.innerHTML = currentHtml;
-    const plainText = tempEl.innerText;
+    // Parse the HTML string into a document
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(currentHtml, 'text/html');
+
+    // Remove all <style> elements and any external stylesheet links
+    doc
+      .querySelectorAll('style, link[rel="stylesheet"]')
+      .forEach((el) => el.remove());
+
+    // Optionally, remove inline style attributes if needed:
+    doc
+      .querySelectorAll('[style]')
+      .forEach((el) => el.removeAttribute('style'));
+
+    // Extract plain text from the body (or the whole document as fallback)
+    const plainText = doc.body
+      ? doc.body.innerText
+      : doc.documentElement.innerText;
+
+    // Copy the plain text to clipboard
     navigator.clipboard
       .writeText(plainText)
       .then(() => alert('Plain text copied to clipboard!'))
       .catch((err) => console.error('Failed to copy:', err));
+  };
+
+  const openPreviewInNewTab = () => {
+    const newTab = window.open('');
+    if (newTab) {
+      newTab.document.write(currentHtml);
+      newTab.document.close();
+    }
   };
 
   return (
@@ -97,8 +132,7 @@ export default function EmailCreator() {
                     : 'text-gray-400 hover:text-gray-300'
                 }`}
               >
-                Feeling lucky? Enter in the URL you are advertising and we will
-                do the rest
+                Feeling lucky? Enter URL
               </button>
             </div>
 
@@ -106,7 +140,7 @@ export default function EmailCreator() {
             <div
               className='absolute bottom-0 left-0 h-[2px] bg-blue-400 transition-all duration-300'
               style={{
-                width: activeInput === 'text' ? '232px' : '584px',
+                width: activeInput === 'text' ? '232px' : '214px',
                 transform: `translateX(${
                   activeInput === 'text' ? '0' : 'calc(232px)'
                 })`,
@@ -219,7 +253,20 @@ export default function EmailCreator() {
                 onClick={copyPlainText}
                 className='bg-green-600 hover:bg-green-700'
               >
-                <Copy className='mr-2 h-4 w-4' /> Copy
+                <Copy className='mr-2 h-4 w-4' /> Copy Plain Text
+              </Button>
+              <Button
+                onClick={copyHtmlCode}
+                className='bg-blue-600 hover:bg-blue-700'
+              >
+                <Copy className='mr-2 h-4 w-4' /> Copy HTML
+              </Button>
+
+              <Button
+                onClick={openPreviewInNewTab}
+                className='bg-purple-600 hover:bg-purple-700'
+              >
+                <ExternalLink className='mr-2 h-4 w-4' /> Open in New Tab
               </Button>
             </div>
           </div>
@@ -247,7 +294,7 @@ export default function EmailCreator() {
               <Button
                 variant='outline'
                 onClick={() => setShowConfirmation(false)}
-                className='bg-gray-600 hover:bg-gray-700 text-white'
+                className='text-red-500 bg-transparent border-red-500 hover:bg-red-500 hover:text-white'
               >
                 Cancel
               </Button>
