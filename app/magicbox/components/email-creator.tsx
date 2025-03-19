@@ -74,9 +74,26 @@ export default function EmailCreator() {
       });
   };
   const copyPlainText = () => {
-    const tempEl = document.createElement('div');
-    tempEl.innerHTML = currentHtml;
-    const plainText = tempEl.innerText;
+    // Parse the HTML string into a document
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(currentHtml, 'text/html');
+
+    // Remove all <style> elements and any external stylesheet links
+    doc
+      .querySelectorAll('style, link[rel="stylesheet"]')
+      .forEach((el) => el.remove());
+
+    // Optionally, remove inline style attributes if needed:
+    doc
+      .querySelectorAll('[style]')
+      .forEach((el) => el.removeAttribute('style'));
+
+    // Extract plain text from the body (or the whole document as fallback)
+    const plainText = doc.body
+      ? doc.body.innerText
+      : doc.documentElement.innerText;
+
+    // Copy the plain text to clipboard
     navigator.clipboard
       .writeText(plainText)
       .then(() => alert('Plain text copied to clipboard!'))
