@@ -99,7 +99,7 @@ export default function SplashGenerator() {
             htmlFor='query'
             className='block mb-2 font-semibold text-blue-300'
           >
-            What does your ideal splash page look like?
+            What does your ideal webpage look like?
           </Label>
           <Textarea
             id='query'
@@ -136,7 +136,7 @@ export default function SplashGenerator() {
                   htmlFor='button_url'
                   className='block mb-2 font-semibold text-blue-300'
                 >
-                  Button URL (Optional):
+                  Link You Are Advertising (Optional):
                 </Label>
                 <Input
                   id='button_url'

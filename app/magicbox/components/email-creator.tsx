@@ -132,7 +132,7 @@ export default function EmailCreator() {
                     : 'text-gray-400 hover:text-gray-300'
                 }`}
               >
-                Feeling lucky? Enter URL
+                Feeling lucky? Enter URL Only!
               </button>
             </div>
 
@@ -140,7 +140,7 @@ export default function EmailCreator() {
             <div
               className='absolute bottom-0 left-0 h-[2px] bg-blue-400 transition-all duration-300'
               style={{
-                width: activeInput === 'text' ? '232px' : '214px',
+                width: activeInput === 'text' ? '232px' : '256px',
                 transform: `translateX(${
                   activeInput === 'text' ? '0' : 'calc(232px)'
                 })`,
@@ -195,7 +195,7 @@ export default function EmailCreator() {
             disabled={isLoading}
             className='w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
           >
-            <Wand2 className='mr-2 h-4 w-4' /> Generate Email
+            <Wand2 className='mr-2 h-4 w-4' /> Create Email Ad
           </Button>
         </div>
       ) : (

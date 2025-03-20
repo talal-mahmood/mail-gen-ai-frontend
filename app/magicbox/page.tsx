@@ -31,21 +31,23 @@ export default function MagicBox() {
                 className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white'
               >
                 <Sparkles className='mr-2 h-4 w-4' />
-                Splash <span className='hidden ml-1 sm:inline'>Generator</span>
+                Splash {/* <span className='hidden ml-1 sm:inline'> */}/ Webpage
+                Generator
+                {/* </span> */}
               </TabsTrigger>
               <TabsTrigger
                 value='email'
                 className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white'
               >
                 <Mail className='mr-2 h-4 w-4' />
-                Email <span className='hidden ml-1 sm:inline'>Creator</span>
+                Email Ad Creator
               </TabsTrigger>
               <TabsTrigger
                 value='banner'
                 className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white'
               >
                 <Image className='mr-2 h-4 w-4' />
-                Banner <span className='hidden ml-1 sm:inline'>Builder</span>
+                HercuBlurb / Banner Ad Builder
               </TabsTrigger>
             </TabsList>
           </div>
