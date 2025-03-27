@@ -5,9 +5,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Wand2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
-import { callEmailGenerateAPI } from '@/lib/api';
+import { callBlurbGenerateAPI } from '@/lib/api';
 
-export default function EmailCreator() {
+export default function HercuBlurbTab() {
   const [prompt, setPrompt] = useState('');
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +18,7 @@ export default function EmailCreator() {
   const [activeInput, setActiveInput] = useState<'text' | 'url'>('text');
   const [updatePrompt, setUpdatePrompt] = useState('');
 
-  const generateEmail = async (operation: 'start_over' | 'update') => {
+  const generateBlurb = async (operation: 'start_over' | 'update') => {
     const isUpdate = operation === 'update';
     const currentPrompt = isUpdate ? updatePrompt : prompt;
 
@@ -39,19 +39,19 @@ export default function EmailCreator() {
     const finalPrompt = isUpdate
       ? currentPrompt
       : activeInput === 'url'
-      ? `Create an email based on the content from this URL: ${url}`
+      ? `Create a blurb based on the content from this URL: ${url}`
       : prompt;
 
     const requestData = {
       prompt: finalPrompt,
       website_url: url,
-      operation: isUpdate ? 'refine' : 'generate',
-      previous_email: isUpdate ? currentHtml : '',
+      operation: isUpdate ? 'update' : 'start_over',
+      previous_blurb: isUpdate ? currentHtml : '',
     };
 
     try {
-      const data = await callEmailGenerateAPI(requestData);
-      setCurrentHtml(data.email);
+      const data = await callBlurbGenerateAPI(requestData);
+      setCurrentHtml(data.html);
       setShowPreview(true);
       if (!isUpdate) setPrompt('');
       setUpdatePrompt('');
@@ -191,7 +191,7 @@ export default function EmailCreator() {
           </div>
 
           <Button
-            onClick={() => generateEmail('start_over')}
+            onClick={() => generateBlurb('start_over')}
             disabled={isLoading}
             className='w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
           >
@@ -202,7 +202,7 @@ export default function EmailCreator() {
         <div className='glassmorphism p-8 rounded-xl'>
           <div className='mb-6'>
             <Label className='block mb-2 font-semibold text-blue-300'>
-              Update Email Content
+              Update Blurb Content
             </Label>
             <Textarea
               value={updatePrompt}
@@ -221,7 +221,7 @@ export default function EmailCreator() {
               <Wand2 className='mr-2 h-4 w-4' /> Generate New Email
             </Button>
             <Button
-              onClick={() => generateEmail('update')}
+              onClick={() => generateBlurb('update')}
               disabled={isLoading}
               className='flex-1 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700'
             >
@@ -270,13 +270,15 @@ export default function EmailCreator() {
               </Button>
             </div>
           </div>
-          <pre className='w-full h-[80dvh] p-4 overflow-auto bg-gray-900 text-gray-100 rounded-lg text-wrap'>
+          <div
+            className={`w-full bg-white rounded-lg overflow-scroll h-[500px] `}
+          >
             <iframe
               srcDoc={currentHtml}
-              className='w-full h-full'
+              className={`w-full h-full m-auto p-2`}
               title='Preview'
             />
-          </pre>
+          </div>
         </div>
       )}
 

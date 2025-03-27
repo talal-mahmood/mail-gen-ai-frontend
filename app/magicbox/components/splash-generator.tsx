@@ -262,7 +262,8 @@ export default function SplashGenerator() {
                   setShowPreview(false);
                   setShowConfirmation(false);
                 }}
-                className='bg-blue-600 hover:bg-blue-700'
+                className='bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 
+           transition-all'
               >
                 Confirm
               </Button>
