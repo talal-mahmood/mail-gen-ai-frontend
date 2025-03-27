@@ -1,173 +1,116 @@
 'use client';
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Wand2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
-import { callEmailGenerateAPI } from '@/lib/api';
+import { Input } from '@/components/ui/input';
+import { Wand2, RefreshCw, Copy, ExternalLink, Download } from 'lucide-react';
+import { callBannerGenerateAPI } from '@/lib/api';
+import { Slider } from '@/components/ui/slider';
 
-export default function EmailCreator() {
+export default function BannerAdTab() {
   const [prompt, setPrompt] = useState('');
   const [url, setUrl] = useState('');
+  const [urlError, setUrlError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [currentHtml, setCurrentHtml] = useState('');
+  const [bannerHtml, setBannerHtml] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [urlError, setUrlError] = useState('');
-  const [activeInput, setActiveInput] = useState<'text' | 'url'>('text');
+  const [bannerWidth, setBannerWidth] = useState(300);
+  const [bannerHeight, setBannerHeight] = useState(500);
   const [updatePrompt, setUpdatePrompt] = useState('');
 
-  const generateEmail = async (operation: 'start_over' | 'update') => {
-    const isUpdate = operation === 'update';
-    const currentPrompt = isUpdate ? updatePrompt : prompt;
+  const validateUrl = (inputUrl: string) => {
+    return /^https?:\/\//i.test(inputUrl);
+  };
 
-    if (!isUpdate) {
-      if (activeInput === 'text' && !currentPrompt.trim()) {
-        alert('Please enter a description of what you want to create.');
-        return;
-      }
-      if (!url || urlError) {
-        alert('Please enter a valid URL.');
-        return;
-      }
+  const generateBanner = async (operation: 'start_over' | 'update') => {
+    if (!prompt.trim()) {
+      alert('Please enter a description of what you want to create.');
+      return;
+    }
+
+    if (!url.trim()) {
+      setUrlError('Please enter a website URL');
+      return;
+    }
+
+    if (!validateUrl(url)) {
+      setUrlError('URL must start with "http://" or "https://"');
+      return;
     }
 
     setIsLoading(true);
     setShowPreview(false);
-
-    const finalPrompt = isUpdate
-      ? currentPrompt
-      : activeInput === 'url'
-      ? `Create an email based on the content from this URL: ${url}`
-      : prompt;
-
-    const requestData = {
-      prompt: finalPrompt,
-      website_url: url,
-      operation: isUpdate ? 'refine' : 'generate',
-      previous_email: isUpdate ? currentHtml : '',
-    };
+    setUrlError('');
 
     try {
-      const data = await callEmailGenerateAPI(requestData);
-      setCurrentHtml(data.email);
+      const requestData = {
+        user_prompt: prompt,
+        width: bannerWidth,
+        height: bannerHeight,
+        operation: operation,
+        website_url: url,
+        previous_banner: operation === 'update' ? bannerHtml : '',
+      };
+
+      const response = await callBannerGenerateAPI(requestData);
+      setBannerHtml(response.html);
       setShowPreview(true);
-      if (!isUpdate) setPrompt('');
-      setUpdatePrompt('');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error:', error);
-      alert(error.message || 'Error connecting to API. Please try again.');
+      alert('Error generating banner. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+
   const copyHtmlCode = () => {
     navigator.clipboard
-      .writeText(currentHtml)
-      .then(() => {
-        alert('HTML copied to clipboard!');
-      })
+      .writeText(bannerHtml)
+      .then(() => alert('HTML copied to clipboard!'))
       .catch((err) => {
         console.error('Failed to copy: ', err);
         alert('Failed to copy HTML code. Please try again.');
       });
   };
-  const copyPlainText = () => {
-    // Parse the HTML string into a document
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(currentHtml, 'text/html');
-
-    // Remove all <style> elements and any external stylesheet links
-    doc
-      .querySelectorAll('style, link[rel="stylesheet"]')
-      .forEach((el) => el.remove());
-
-    // Optionally, remove inline style attributes if needed:
-    doc
-      .querySelectorAll('[style]')
-      .forEach((el) => el.removeAttribute('style'));
-
-    // Extract plain text from the body (or the whole document as fallback)
-    const plainText = doc.body
-      ? doc.body.innerText
-      : doc.documentElement.innerText;
-
-    // Copy the plain text to clipboard
-    navigator.clipboard
-      .writeText(plainText)
-      .then(() => alert('Plain text copied to clipboard!'))
-      .catch((err) => console.error('Failed to copy:', err));
-  };
 
   const openPreviewInNewTab = () => {
     const newTab = window.open('');
     if (newTab) {
-      newTab.document.write(currentHtml);
+      newTab.document.write(bannerHtml);
       newTab.document.close();
     }
+  };
+
+  const downloadBanner = () => {
+    alert('Download functionality would be implemented here');
   };
 
   return (
     <div className='space-y-8'>
       {!showPreview && !isLoading ? (
         <div className='glassmorphism p-8 rounded-xl'>
-          <div className='w-full relative mb-6'>
-            <div className='flex gap-4'>
-              <button
-                onClick={() => setActiveInput('text')}
-                className={`relative z-10 px-4 py-2 transition-all duration-300 ${
-                  activeInput === 'text'
-                    ? 'text-blue-400 font-semibold'
-                    : 'text-gray-400 hover:text-gray-300'
-                }`}
-              >
-                What are you advertising?
-              </button>
-              <button
-                onClick={() => setActiveInput('url')}
-                className={`relative z-10 px-4 py-2 transition-all duration-300 ${
-                  activeInput === 'url'
-                    ? 'text-blue-400 font-semibold'
-                    : 'text-gray-400 hover:text-gray-300'
-                }`}
-              >
-                Feeling lucky? Enter URL Only!
-              </button>
-            </div>
-
-            {/* Animated underline */}
-            <div
-              className='absolute bottom-0 left-0 h-[2px] bg-blue-400 transition-all duration-300'
-              style={{
-                width: activeInput === 'text' ? '232px' : '256px',
-                transform: `translateX(${
-                  activeInput === 'text' ? '0' : 'calc(232px)'
-                })`,
-              }}
-            ></div>
+          <div className='mb-6'>
+            <Label
+              htmlFor='prompt'
+              className='block mb-2 font-semibold text-blue-300'
+            >
+              Describe your banner
+            </Label>
+            <Textarea
+              id='prompt'
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              className='w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
+              placeholder='Describe what you want your banner to look like...'
+              rows={3}
+            />
           </div>
-
-          {activeInput === 'text' && (
-            <div className='mb-6'>
-              {/* <Label className='block mb-2 font-semibold text-blue-300'>
-                What are you advertising?
-              </Label> */}
-              <Textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                className='w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
-                placeholder='Describe what you are advertising or paste in your current ad and we will improve...'
-                rows={3}
-              />
-            </div>
-          )}
-
           <div className='mb-6'>
             <Label className='block mb-2 font-semibold text-blue-300'>
-              {activeInput === 'text'
-                ? 'The URL that your button or link will direct to:'
-                : ''}
+              Website URL to link to:
             </Label>
             <Input
               type='url'
@@ -176,7 +119,7 @@ export default function EmailCreator() {
                 const newUrl = e.target.value;
                 setUrl(newUrl);
                 setUrlError(
-                  newUrl && !/^https?:\/\//i.test(newUrl)
+                  newUrl && !validateUrl(newUrl)
                     ? 'URL must start with "http://" or "https://"'
                     : ''
                 );
@@ -189,26 +132,55 @@ export default function EmailCreator() {
               <p className='mt-1 text-xs text-red-500'>{urlError}</p>
             )}
           </div>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
+            <div className='mb-6'>
+              <Label className='block mb-2 font-semibold text-blue-300'>
+                Banner Width: {bannerWidth}px
+              </Label>
+              <Slider
+                value={[bannerWidth]}
+                min={300}
+                max={3000}
+                step={10}
+                onValueChange={(value) => setBannerWidth(value[0])}
+                className='py-4'
+              />
+            </div>
+
+            <div className='mb-6'>
+              <Label className='block mb-2 font-semibold text-blue-300'>
+                Banner Height: {bannerHeight}px
+              </Label>
+              <Slider
+                value={[bannerHeight]}
+                min={100}
+                max={2000}
+                step={10}
+                onValueChange={(value) => setBannerHeight(value[0])}
+                className='py-4'
+              />
+            </div>
+          </div>
 
           <Button
-            onClick={() => generateEmail('start_over')}
+            onClick={() => generateBanner('start_over')}
             disabled={isLoading}
             className='w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
           >
-            <Wand2 className='mr-2 h-4 w-4' /> Create Email Ad
+            <Wand2 className='mr-2 h-4 w-4' /> Generate New Banner
           </Button>
         </div>
       ) : (
         <div className='glassmorphism p-8 rounded-xl'>
           <div className='mb-6'>
             <Label className='block mb-2 font-semibold text-blue-300'>
-              Update Email Content
+              Update Banner Content
             </Label>
             <Textarea
               value={updatePrompt}
               onChange={(e) => setUpdatePrompt(e.target.value)}
               className='w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
-              placeholder='Enter updated instructions for the email...'
+              placeholder='Enter updated instructions for the banner...'
               rows={3}
             />
           </div>
@@ -218,14 +190,14 @@ export default function EmailCreator() {
               onClick={() => setShowConfirmation(true)}
               className='flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
             >
-              <Wand2 className='mr-2 h-4 w-4' /> Generate New Email
+              <Wand2 className='mr-2 h-4 w-4' /> Generate New Banner
             </Button>
             <Button
-              onClick={() => generateEmail('update')}
+              onClick={() => generateBanner('update')}
               disabled={isLoading}
               className='flex-1 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700'
             >
-              <RefreshCw className='mr-2 h-4 w-4' /> Update Email
+              <RefreshCw className='mr-2 h-4 w-4' /> Update Banner
             </Button>
           </div>
         </div>
@@ -236,7 +208,7 @@ export default function EmailCreator() {
         <div className='flex flex-col items-center justify-center my-12'>
           <div className='w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4'></div>
           <p className='text-xl text-blue-300 loading-dots'>
-            {showPreview ? 'Updating' : 'Generating'} your email
+            Generating your banner
           </p>
         </div>
       )}
@@ -250,10 +222,10 @@ export default function EmailCreator() {
             </h2>
             <div className='flex gap-2'>
               <Button
-                onClick={copyPlainText}
+                onClick={downloadBanner}
                 className='bg-green-600 hover:bg-green-700'
               >
-                <Copy className='mr-2 h-4 w-4' /> Copy Plain Text
+                <Download className='mr-2 h-4 w-4' /> Download
               </Button>
               <Button
                 onClick={copyHtmlCode}
@@ -261,7 +233,6 @@ export default function EmailCreator() {
               >
                 <Copy className='mr-2 h-4 w-4' /> Copy HTML
               </Button>
-
               <Button
                 onClick={openPreviewInNewTab}
                 className='bg-purple-600 hover:bg-purple-700'
@@ -270,17 +241,17 @@ export default function EmailCreator() {
               </Button>
             </div>
           </div>
-          <pre className='w-full h-[80dvh] p-4 overflow-auto bg-gray-900 text-gray-100 rounded-lg text-wrap'>
+          <div
+            className={`w-full bg-white rounded-lg overflow-scroll h-[500px] `}
+          >
             <iframe
-              srcDoc={currentHtml}
-              className='w-full h-full'
+              srcDoc={bannerHtml}
+              className={`w-full h-[2020px] m-auto p-2`}
               title='Preview'
             />
-          </pre>
+          </div>
         </div>
       )}
-
-      {/* Confirmation Dialog */}
       {showConfirmation && (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
           <div className='bg-gray-800 p-6 rounded-lg max-w-md w-full'>
@@ -303,7 +274,7 @@ export default function EmailCreator() {
                   setPrompt('');
                   setUrl('');
                   setUpdatePrompt('');
-                  setCurrentHtml('');
+                  setBannerHtml('');
                   setShowPreview(false);
                   setShowConfirmation(false);
                 }}

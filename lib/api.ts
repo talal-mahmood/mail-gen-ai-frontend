@@ -106,3 +106,30 @@ export async function callBannerGenerateAPI(requestData: any): Promise<any> {
     throw error;
   }
 }
+
+export async function callBlurbGenerateAPI(requestData: any): Promise<any> {
+  if (!baseUrl) {
+    throw new Error('API base URL is not defined in environment variables');
+  }
+
+  try {
+    const response = await fetch(`/v1/powerblurb/generate`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to generate email');
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error('Email API call error:', error);
+    throw error;
+  }
+}
