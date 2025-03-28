@@ -213,7 +213,7 @@ export default function HercuBlurbTab() {
             disabled={isLoading}
             className='w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
           >
-            <Wand2 className='mr-2 h-4 w-4' /> Create Email Ad
+            <Wand2 className='mr-2 h-4 w-4' /> Create Blurb
           </Button>
         </div>
       ) : (
@@ -226,7 +226,7 @@ export default function HercuBlurbTab() {
               value={updatePrompt}
               onChange={(e) => setUpdatePrompt(e.target.value)}
               className='w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
-              placeholder='Enter updated instructions for the email...'
+              placeholder='Enter updated instructions for the blurb...'
               rows={3}
             />
           </div>
@@ -236,14 +236,14 @@ export default function HercuBlurbTab() {
               onClick={() => setShowConfirmation(true)}
               className='flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
             >
-              <Wand2 className='mr-2 h-4 w-4' /> Generate New Email
+              <Wand2 className='mr-2 h-4 w-4' /> Generate New Blurb
             </Button>
             <Button
               onClick={() => generateBlurb('update')}
               disabled={isLoading}
               className='flex-1 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700'
             >
-              <RefreshCw className='mr-2 h-4 w-4' /> Update Email
+              <RefreshCw className='mr-2 h-4 w-4' /> Update Blurb
             </Button>
           </div>
         </div>
@@ -254,7 +254,7 @@ export default function HercuBlurbTab() {
         <div className='flex flex-col items-center justify-center my-12'>
           <div className='w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4'></div>
           <p className='text-xl text-blue-300 loading-dots'>
-            {showPreview ? 'Updating' : 'Generating'} your email
+            {showPreview ? 'Updating' : 'Generating'} your blurb
           </p>
         </div>
       )}
