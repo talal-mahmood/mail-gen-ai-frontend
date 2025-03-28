@@ -173,7 +173,7 @@ export default function SplashGenerator() {
                   //   }
                   // }}
                   className='w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
-                  placeholder='https://example.com'
+                  placeholder='example.com or https://example.com'
                 />
                 {urlError && (
                   <p className='mt-1 text-xs text-red-500'>{urlError}</p>
