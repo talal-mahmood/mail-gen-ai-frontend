@@ -6,6 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Wand2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
 import { callEmailGenerateAPI } from '@/lib/api';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function EmailCreator() {
   const [prompt, setPrompt] = useState('');
@@ -17,6 +24,7 @@ export default function EmailCreator() {
   const [urlError, setUrlError] = useState('');
   const [activeInput, setActiveInput] = useState<'text' | 'url'>('text');
   const [updatePrompt, setUpdatePrompt] = useState('');
+  const [styleType, setStyleType] = useState('casual');
 
   const generateEmail = async (operation: 'start_over' | 'update') => {
     const isUpdate = operation === 'update';
@@ -56,6 +64,7 @@ export default function EmailCreator() {
       website_url: processedUrl,
       operation: isUpdate ? 'refine' : 'generate',
       previous_email: isUpdate ? currentHtml : '',
+      email_style: styleType,
     };
 
     try {
@@ -177,24 +186,39 @@ export default function EmailCreator() {
               />
             </div>
           )}
-
-          <div className='mb-6'>
-            <Label className='block mb-2 font-semibold text-blue-300'>
-              {activeInput === 'text'
-                ? 'The URL that your button or link will direct to:'
-                : ''}
-            </Label>
-            <Input
-              type='url'
-              value={url}
-              onChange={(e) => handleUrlChange(e.target.value)}
-              className='w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
-              placeholder='example.com or https://example.com'
-              required
-            />
-            {urlError && (
-              <p className='mt-1 text-xs text-red-500'>{urlError}</p>
-            )}
+          <div className='grid grid-cols-2 gap-4 items-end'>
+            <div className='mb-6'>
+              <Label className='block mb-2 font-semibold text-blue-300'>
+                {activeInput === 'text'
+                  ? 'The URL that your button or link will direct to:'
+                  : 'URL'}
+              </Label>
+              <Input
+                type='url'
+                value={url}
+                onChange={(e) => handleUrlChange(e.target.value)}
+                className='w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
+                placeholder='example.com or https://example.com'
+                required
+              />
+              {urlError && (
+                <p className='mt-1 text-xs text-red-500'>{urlError}</p>
+              )}
+            </div>
+            <div className='mb-6'>
+              <Label className='block mb-2 font-semibold text-blue-300'>
+                Email Style
+              </Label>
+              <Select value={styleType} onValueChange={setStyleType}>
+                <SelectTrigger className='w-full p-3 bg-gray-800 border border-gray-600 text-white'>
+                  <SelectValue placeholder='Select style' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='casual'>Casual (Friendly)</SelectItem>
+                  <SelectItem value='professional'>Professional</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <Button
