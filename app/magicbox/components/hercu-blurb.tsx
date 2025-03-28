@@ -21,13 +21,14 @@ export default function HercuBlurbTab() {
   const generateBlurb = async (operation: 'start_over' | 'update') => {
     const isUpdate = operation === 'update';
     const currentPrompt = isUpdate ? updatePrompt : prompt;
+    let processedUrl = url.trim();
 
     if (!isUpdate) {
       if (activeInput === 'text' && !currentPrompt.trim()) {
         alert('Please enter a description of what you want to create.');
         return;
       }
-      if (!url || urlError) {
+      if (!processedUrl) {
         alert('Please enter a valid URL.');
         return;
       }
@@ -35,6 +36,14 @@ export default function HercuBlurbTab() {
 
     setIsLoading(true);
     setShowPreview(false);
+
+    // Add HTTPS if no protocol exists
+    if (
+      !processedUrl.startsWith('http://') &&
+      !processedUrl.startsWith('https://')
+    ) {
+      processedUrl = `https://${processedUrl}`;
+    }
 
     const finalPrompt = isUpdate
       ? currentPrompt
@@ -44,7 +53,7 @@ export default function HercuBlurbTab() {
 
     const requestData = {
       prompt: finalPrompt,
-      website_url: url,
+      website_url: processedUrl,
       operation: isUpdate ? 'update' : 'start_over',
       previous_blurb: isUpdate ? currentHtml : '',
     };
@@ -62,6 +71,14 @@ export default function HercuBlurbTab() {
       setIsLoading(false);
     }
   };
+
+  // Update URL input handler to remove previous validation
+  const handleUrlChange = (newUrl: string) => {
+    setUrl(newUrl);
+    // Clear any previous error state
+    setUrlError('');
+  };
+
   const copyHtmlCode = () => {
     navigator.clipboard
       .writeText(currentHtml)
@@ -172,15 +189,16 @@ export default function HercuBlurbTab() {
             <Input
               type='url'
               value={url}
-              onChange={(e) => {
-                const newUrl = e.target.value;
-                setUrl(newUrl);
-                setUrlError(
-                  newUrl && !/^https?:\/\//i.test(newUrl)
-                    ? 'URL must start with "http://" or "https://"'
-                    : ''
-                );
-              }}
+              onChange={(e) => handleUrlChange(e.target.value)}
+              // onChange={(e) => {
+              //   const newUrl = e.target.value;
+              //   setUrl(newUrl);
+              //   setUrlError(
+              //     newUrl && !/^https?:\/\//i.test(newUrl)
+              //       ? 'URL must start with "http://" or "https://"'
+              //       : ''
+              //   );
+              // }}
               className='w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
               placeholder='https://example.com'
               required

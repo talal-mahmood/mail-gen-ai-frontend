@@ -21,9 +21,9 @@ export default function BannerAdTab() {
   const [bannerHeight, setBannerHeight] = useState(500);
   const [updatePrompt, setUpdatePrompt] = useState('');
 
-  const validateUrl = (inputUrl: string) => {
-    return /^https?:\/\//i.test(inputUrl);
-  };
+  // const validateUrl = (inputUrl: string) => {
+  //   return /^https?:\/\//i.test(inputUrl);
+  // };
 
   const generateBanner = async (operation: 'start_over' | 'update') => {
     if (!prompt.trim()) {
@@ -31,13 +31,10 @@ export default function BannerAdTab() {
       return;
     }
 
-    if (!url.trim()) {
-      setUrlError('Please enter a website URL');
-      return;
-    }
+    let processedUrl = url.trim();
 
-    if (!validateUrl(url)) {
-      setUrlError('URL must start with "http://" or "https://"');
+    if (!processedUrl) {
+      alert('Please enter a valid URL.');
       return;
     }
 
@@ -45,13 +42,21 @@ export default function BannerAdTab() {
     setShowPreview(false);
     setUrlError('');
 
+    // Add HTTPS if no protocol exists
+    if (
+      !processedUrl.startsWith('http://') &&
+      !processedUrl.startsWith('https://')
+    ) {
+      processedUrl = `https://${processedUrl}`;
+    }
+
     try {
       const requestData = {
         user_prompt: prompt,
         width: bannerWidth,
         height: bannerHeight,
         operation: operation,
-        website_url: url,
+        website_url: processedUrl,
         previous_banner: operation === 'update' ? bannerHtml : '',
       };
 
@@ -64,6 +69,13 @@ export default function BannerAdTab() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Update URL input handler to remove previous validation
+  const handleUrlChange = (newUrl: string) => {
+    setUrl(newUrl);
+    // Clear any previous error state
+    setUrlError('');
   };
 
   const copyHtmlCode = () => {
@@ -112,18 +124,20 @@ export default function BannerAdTab() {
             <Label className='block mb-2 font-semibold text-blue-300'>
               Website URL to link to:
             </Label>
+
             <Input
               type='url'
               value={url}
-              onChange={(e) => {
-                const newUrl = e.target.value;
-                setUrl(newUrl);
-                setUrlError(
-                  newUrl && !validateUrl(newUrl)
-                    ? 'URL must start with "http://" or "https://"'
-                    : ''
-                );
-              }}
+              onChange={(e) => handleUrlChange(e.target.value)}
+              // onChange={(e) => {
+              //   const newUrl = e.target.value;
+              //   setUrl(newUrl);
+              //   setUrlError(
+              //     newUrl && !validateUrl(newUrl)
+              //       ? 'URL must start with "http://" or "https://"'
+              //       : ''
+              //   );
+              // }}
               className='w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
               placeholder='https://example.com'
               required

@@ -31,23 +31,33 @@ export default function SplashGenerator() {
   }, [id]);
 
   const generateSplashPage = async (operation: 'start_over' | 'update') => {
+    let processedUrl = buttonUrl.trim();
+
     if (!query.trim()) {
       alert('Please enter a description of what you want to create.');
       return;
     }
-    if (urlError !== '') {
-      alert('Please enter a valid url.');
+    if (!processedUrl) {
+      alert('Please enter a valid URL.');
       return;
     }
 
     setIsLoading(true);
     setShowPreview(false);
 
+    // Add HTTPS if no protocol exists
+    if (
+      !processedUrl.startsWith('http://') &&
+      !processedUrl.startsWith('https://')
+    ) {
+      processedUrl = `https://${processedUrl}`;
+    }
+
     const requestData: any = {
       query,
       style_type: styleType,
       operation,
-      button_url: buttonUrl,
+      button_url: processedUrl,
     };
 
     if (operation === 'update') {
@@ -69,6 +79,13 @@ export default function SplashGenerator() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Update URL input handler to remove previous validation
+  const handleUrlChange = (newUrl: string) => {
+    setButtonUrl(newUrl);
+    // Clear any previous error state
+    setUrlError('');
   };
 
   const copyHtmlCode = () => {
@@ -142,18 +159,19 @@ export default function SplashGenerator() {
                   id='button_url'
                   type='url'
                   value={buttonUrl}
-                  onChange={(e) => {
-                    const newUrl = e.target.value;
-                    setButtonUrl(newUrl);
-                    // Validate that the URL starts with "http://" or "https://"
-                    if (newUrl && !/^https?:\/\//i.test(newUrl)) {
-                      setUrlError(
-                        'URL must start with "http://" or "https://".'
-                      );
-                    } else {
-                      setUrlError('');
-                    }
-                  }}
+                  onChange={(e) => handleUrlChange(e.target.value)}
+                  // onChange={(e) => {
+                  //   const newUrl = e.target.value;
+                  //   setButtonUrl(newUrl);
+                  //   // Validate that the URL starts with "http://" or "https://"
+                  //   if (newUrl && !/^https?:\/\//i.test(newUrl)) {
+                  //     setUrlError(
+                  //       'URL must start with "http://" or "https://".'
+                  //     );
+                  //   } else {
+                  //     setUrlError('');
+                  //   }
+                  // }}
                   className='w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
                   placeholder='https://example.com'
                 />
