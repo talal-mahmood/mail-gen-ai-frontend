@@ -52,7 +52,7 @@ export default function BannerAdTab() {
 
     try {
       const requestData = {
-        user_prompt: prompt,
+        user_prompt: operation === 'update' ? updatePrompt : prompt,
         width: bannerWidth,
         height: bannerHeight,
         operation: operation,
