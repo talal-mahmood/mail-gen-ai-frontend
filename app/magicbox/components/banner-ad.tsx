@@ -26,11 +26,12 @@ export default function BannerAdTab() {
   // };
 
   const generateBanner = async (operation: 'start_over' | 'update') => {
-    if (!prompt.trim()) {
-      alert('Please enter a description of what you want to create.');
-      return;
-    }
+    // if (!prompt.trim()) {
+    //   alert('Please enter a description of what you want to create.');
+    //   return;
+    // }
 
+    let processedPrompt = prompt.trim();
     let processedUrl = url.trim();
 
     if (!processedUrl) {
@@ -48,6 +49,12 @@ export default function BannerAdTab() {
       !processedUrl.startsWith('https://')
     ) {
       processedUrl = `https://${processedUrl}`;
+    }
+
+    if (!processedPrompt) {
+      // alert('Please enter a description of what you want to create.');
+      // return;
+      processedPrompt = `Generate a banner for this url: ${processedUrl}`;
     }
 
     try {
@@ -109,7 +116,7 @@ export default function BannerAdTab() {
               htmlFor='prompt'
               className='block mb-2 font-semibold text-blue-300'
             >
-              Describe your banner
+              Describe your banner (Optional)
             </Label>
             <Textarea
               id='prompt'
@@ -260,7 +267,7 @@ export default function BannerAdTab() {
           >
             <iframe
               srcDoc={bannerHtml}
-              className={`w-full h-[2020px] m-auto p-2`}
+              className={`w-[2020px] h-[2020px] m-auto p-2`}
               title='Preview'
             />
           </div>
