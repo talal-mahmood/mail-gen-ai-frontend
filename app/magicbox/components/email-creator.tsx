@@ -29,7 +29,6 @@ export default function EmailCreator() {
 
   // Autocomplete state
   const [ghostText, setGhostText] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Check 1: At least one word + space entered
@@ -57,6 +56,7 @@ export default function EmailCreator() {
         setGhostText(completion);
       }
     } catch (err) {
+      console.log(err);
       if (!controller.signal.aborted) {
         setGhostText('');
       }

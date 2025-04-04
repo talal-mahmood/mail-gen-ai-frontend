@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -28,9 +27,7 @@ export default function SplashGenerator() {
   const [urlError, setUrlError] = useState('');
 
   // Autocomplete state
-  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [ghostText, setGhostText] = useState('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Check 1: At least one word + space entered
@@ -72,6 +69,7 @@ export default function SplashGenerator() {
         setGhostText(completion);
       }
     } catch (err) {
+      console.log(err);
       if (!controller.signal.aborted) {
         setGhostText('');
       }
