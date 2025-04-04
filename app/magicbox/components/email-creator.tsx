@@ -1,11 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Wand2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
-import { callEmailGenerateAPI } from '@/lib/api';
+import { callEmailGenerateAPI, callAutocompleteAPI } from '@/lib/api';
 import {
   Select,
   SelectContent,
@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { TextareaWithGhost } from '@/components/TextAreaWithGhost';
 
 export default function EmailCreator() {
   const [prompt, setPrompt] = useState('');
@@ -25,6 +26,76 @@ export default function EmailCreator() {
   const [activeInput, setActiveInput] = useState<'text' | 'url'>('text');
   const [updatePrompt, setUpdatePrompt] = useState('');
   const [styleType, setStyleType] = useState('casual');
+
+  // Autocomplete state
+  const [ghostText, setGhostText] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Check 1: At least one word + space entered
+  const hasMinimumInput = (text: string) => {
+    return text.trim().includes(' ') && text.trim().length > 1;
+  };
+
+  const fetchAutocomplete = async (query: string) => {
+    // Check 2: Don't show suggestions for empty input
+    if (!query || !hasMinimumInput(query)) {
+      setGhostText('');
+      return;
+    }
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    try {
+      const { completion } = await callAutocompleteAPI(query, 1, styleType); // service_type 1 for emails
+      if (!controller.signal.aborted && completion) {
+        setGhostText(completion);
+      }
+    } catch (err) {
+      if (!controller.signal.aborted) {
+        setGhostText('');
+      }
+    } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+      }
+    }
+  };
+
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      fetchAutocomplete(prompt);
+    }, 500);
+
+    return () => {
+      clearTimeout(debounceTimer);
+      setGhostText(''); // Clear immediately on new input
+    };
+  }, [prompt, styleType]); // Added styleType as dependency
+
+  const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setPrompt(newValue);
+
+    // Immediate feedback when input becomes invalid
+    if (!newValue || !hasMinimumInput(newValue)) {
+      setGhostText('');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (ghostText && e.key === 'Tab') {
+      e.preventDefault();
+      // Accept ghost text on Tab
+      setPrompt(prompt + ghostText);
+      setGhostText('');
+    }
+  };
 
   const generateEmail = async (operation: 'start_over' | 'update') => {
     const isUpdate = operation === 'update';
@@ -146,7 +217,7 @@ export default function EmailCreator() {
                     : 'text-gray-400 hover:text-gray-300'
                 }`}
               >
-                What are you advertising?
+                Tell us your pitch – let’s make email gold!
               </button>
               <button
                 onClick={() => setActiveInput('url')}
@@ -156,7 +227,7 @@ export default function EmailCreator() {
                     : 'text-gray-400 hover:text-gray-300'
                 }`}
               >
-                Feeling lucky? Enter URL Only!
+                Just give us the link — we’ll take it from there
               </button>
             </div>
 
@@ -164,24 +235,23 @@ export default function EmailCreator() {
             <div
               className='absolute bottom-0 left-0 h-[2px] bg-blue-400 transition-all duration-300'
               style={{
-                width: activeInput === 'text' ? '232px' : '256px',
+                width: activeInput === 'text' ? '336px' : '372px',
                 transform: `translateX(${
-                  activeInput === 'text' ? '0' : 'calc(232px)'
+                  activeInput === 'text' ? '0' : 'calc(336px)'
                 })`,
               }}
             ></div>
           </div>
 
           {activeInput === 'text' && (
-            <div className='mb-6'>
-              {/* <Label className='block mb-2 font-semibold text-blue-300'>
-                What are you advertising?
-              </Label> */}
-              <Textarea
+            <div className='mb-6 relative'>
+              <TextareaWithGhost
+                id='prompt'
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                className='w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
-                placeholder='Describe what you are advertising or paste in your current ad and we will improve...'
+                ghostText={hasMinimumInput(prompt) ? ghostText : ''}
+                onChange={handlePromptChange}
+                onKeyDown={handleKeyDown}
+                placeholder='Type your promo or paste your ad. We’ll sprinkle AI magic on it...'
                 rows={3}
               />
             </div>
@@ -189,8 +259,28 @@ export default function EmailCreator() {
           <div className='grid grid-cols-2 gap-4 items-end'>
             <div className='mb-6'>
               <Label className='block mb-2 font-semibold text-blue-300'>
+                Pick Your Email Vibe
+              </Label>
+              <Select value={styleType} onValueChange={setStyleType}>
+                <SelectTrigger className='w-full p-3 bg-gray-800 border border-gray-600 text-white'>
+                  <SelectValue placeholder='Select style' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='casual'>
+                    Cozy & Personal human tone - better chance of landing in
+                    Gmail’s Primary inbox
+                  </SelectItem>
+                  <SelectItem value='professional'>
+                    Bold & Flashy Marketing Magic - more likely to land in
+                    Gmail’s Promotions inbox
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className='mb-6'>
+              <Label className='block mb-2 font-semibold text-blue-300'>
                 {activeInput === 'text'
-                  ? 'The URL that your button or link will direct to:'
+                  ? 'Link destination — where are we sending folks?'
                   : 'URL'}
               </Label>
               <Input
@@ -205,20 +295,6 @@ export default function EmailCreator() {
                 <p className='mt-1 text-xs text-red-500'>{urlError}</p>
               )}
             </div>
-            <div className='mb-6'>
-              <Label className='block mb-2 font-semibold text-blue-300'>
-                Email Style
-              </Label>
-              <Select value={styleType} onValueChange={setStyleType}>
-                <SelectTrigger className='w-full p-3 bg-gray-800 border border-gray-600 text-white'>
-                  <SelectValue placeholder='Select style' />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='casual'>Casual (Friendly)</SelectItem>
-                  <SelectItem value='professional'>Professional</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <Button
@@ -226,20 +302,20 @@ export default function EmailCreator() {
             disabled={isLoading}
             className='w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
           >
-            <Wand2 className='mr-2 h-4 w-4' /> Create Email Ad
+            <Wand2 className='mr-2 h-4 w-4' /> Launch the Email Magic!
           </Button>
         </div>
       ) : (
         <div className='glassmorphism p-8 rounded-xl'>
           <div className='mb-6'>
             <Label className='block mb-2 font-semibold text-blue-300'>
-              Update Email Content
+              Fine Tune It
             </Label>
             <Textarea
               value={updatePrompt}
               onChange={(e) => setUpdatePrompt(e.target.value)}
               className='w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
-              placeholder='Enter updated instructions for the email...'
+              placeholder='Tweak it, twist it, transform it…'
               rows={3}
             />
           </div>
@@ -249,14 +325,14 @@ export default function EmailCreator() {
               onClick={() => setShowConfirmation(true)}
               className='flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
             >
-              <Wand2 className='mr-2 h-4 w-4' /> Generate New Email
+              <Wand2 className='mr-2 h-4 w-4' /> Wipe The Slate Clean
             </Button>
             <Button
               onClick={() => generateEmail('update')}
               disabled={isLoading}
               className='flex-1 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700'
             >
-              <RefreshCw className='mr-2 h-4 w-4' /> Update Email
+              <RefreshCw className='mr-2 h-4 w-4' /> Apply Some Magic
             </Button>
           </div>
         </div>

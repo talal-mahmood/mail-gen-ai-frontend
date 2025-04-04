@@ -133,3 +133,36 @@ export async function callBlurbGenerateAPI(requestData: any): Promise<any> {
     throw error;
   }
 }
+
+export async function callAutocompleteAPI(
+  query: string,
+  service_type: number = 1,
+  style_type: string = ''
+): Promise<{ completion: string }> {
+  if (!baseUrl) {
+    throw new Error('API base URL is not defined in environment variables');
+  }
+
+  try {
+    const response = await fetch(`/v1/autocomplete/generate`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query, service_type, style_type }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.detail || 'Failed to get autocomplete suggestions'
+      );
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error('Autocomplete API call error:', error);
+    throw error;
+  }
+}
