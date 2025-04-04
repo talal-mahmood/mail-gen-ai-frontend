@@ -1,11 +1,12 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react'; // Added useRef and useEffect
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Wand2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
-import { callBlurbGenerateAPI } from '@/lib/api';
+import { callBlurbGenerateAPI, callAutocompleteAPI } from '@/lib/api'; // Added callAutocompleteAPI
+import { TextareaWithGhost } from '@/components/TextAreaWithGhost';
 
 export default function HercuBlurbTab() {
   const [prompt, setPrompt] = useState('');
@@ -17,6 +18,76 @@ export default function HercuBlurbTab() {
   const [urlError, setUrlError] = useState('');
   const [activeInput, setActiveInput] = useState<'text' | 'url'>('text');
   const [updatePrompt, setUpdatePrompt] = useState('');
+
+  // Autocomplete state
+  const [ghostText, setGhostText] = useState('');
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Check 1: At least one word + space entered
+  const hasMinimumInput = (text: string) => {
+    return text.trim().includes(' ') && text.trim().length > 1;
+  };
+
+  const fetchAutocomplete = async (query: string) => {
+    // Check 2: Don't show suggestions for empty input
+    if (!query || !hasMinimumInput(query)) {
+      setGhostText('');
+      return;
+    }
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    try {
+      const { completion } = await callAutocompleteAPI(query, 2); // service_type 2 for blurbs
+      if (!controller.signal.aborted && completion) {
+        setGhostText(completion);
+      }
+    } catch (err) {
+      console.log(err);
+      if (!controller.signal.aborted) {
+        setGhostText('');
+      }
+    } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+      }
+    }
+  };
+
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      fetchAutocomplete(prompt);
+    }, 500);
+
+    return () => {
+      clearTimeout(debounceTimer);
+      setGhostText(''); // Clear immediately on new input
+    };
+  }, [prompt]);
+
+  const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setPrompt(newValue);
+
+    // Immediate feedback when input becomes invalid
+    if (!newValue || !hasMinimumInput(newValue)) {
+      setGhostText('');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (ghostText && e.key === 'Tab') {
+      e.preventDefault();
+      // Accept ghost text on Tab
+      setPrompt(prompt + ghostText);
+      setGhostText('');
+    }
+  };
 
   const generateBlurb = async (operation: 'start_over' | 'update') => {
     const isUpdate = operation === 'update';
@@ -139,7 +210,7 @@ export default function HercuBlurbTab() {
                     : 'text-gray-400 hover:text-gray-300'
                 }`}
               >
-                What are you advertising?
+                Describe your offer, we’ll blurb it up!
               </button>
               <button
                 onClick={() => setActiveInput('url')}
@@ -149,7 +220,7 @@ export default function HercuBlurbTab() {
                     : 'text-gray-400 hover:text-gray-300'
                 }`}
               >
-                Feeling lucky? Enter URL Only!
+                Give us a link — we’ll do the rest
               </button>
             </div>
 
@@ -157,9 +228,9 @@ export default function HercuBlurbTab() {
             <div
               className='absolute bottom-0 left-0 h-[2px] bg-blue-400 transition-all duration-300'
               style={{
-                width: activeInput === 'text' ? '232px' : '256px',
+                width: activeInput === 'text' ? '300px' : '284px',
                 transform: `translateX(${
-                  activeInput === 'text' ? '0' : 'calc(232px)'
+                  activeInput === 'text' ? '0' : 'calc(300px)'
                 })`,
               }}
             ></div>
@@ -167,14 +238,13 @@ export default function HercuBlurbTab() {
 
           {activeInput === 'text' && (
             <div className='mb-6'>
-              {/* <Label className='block mb-2 font-semibold text-blue-300'>
-                What are you advertising?
-              </Label> */}
-              <Textarea
+              <TextareaWithGhost
+                id='prompt'
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                className='w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
-                placeholder='Describe what you are advertising or paste in your current ad and we will improve...'
+                ghostText={hasMinimumInput(prompt) ? ghostText : ''}
+                onChange={handlePromptChange}
+                onKeyDown={handleKeyDown}
+                placeholder='Type your pitch or promo — we’ll blurbify it...'
                 rows={3}
               />
             </div>
@@ -213,7 +283,7 @@ export default function HercuBlurbTab() {
             disabled={isLoading}
             className='w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
           >
-            <Wand2 className='mr-2 h-4 w-4' /> Create Blurb
+            <Wand2 className='mr-2 h-4 w-4' /> Create My Blurb
           </Button>
         </div>
       ) : (
@@ -293,7 +363,7 @@ export default function HercuBlurbTab() {
           >
             <iframe
               srcDoc={currentHtml}
-              className={`w-full h-full m-auto p-2`}
+              className={`w-full h-full m-auto p-1`}
               title='Preview'
             />
           </div>

@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react'; // Added useRef and useEffect
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Wand2, RefreshCw, Copy, ExternalLink, Download } from 'lucide-react';
-import { callBannerGenerateAPI } from '@/lib/api';
+import { callBannerGenerateAPI, callAutocompleteAPI } from '@/lib/api'; // Added callAutocompleteAPI
 import { Slider } from '@/components/ui/slider';
+import { TextareaWithGhost } from '@/components/TextAreaWithGhost';
 
 export default function BannerAdTab() {
   const [prompt, setPrompt] = useState('');
@@ -20,6 +21,76 @@ export default function BannerAdTab() {
   const [bannerWidth, setBannerWidth] = useState(300);
   const [bannerHeight, setBannerHeight] = useState(500);
   const [updatePrompt, setUpdatePrompt] = useState('');
+
+  // Autocomplete state
+  const [ghostText, setGhostText] = useState('');
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Check 1: At least one word + space entered
+  const hasMinimumInput = (text: string) => {
+    return text.trim().includes(' ') && text.trim().length > 1;
+  };
+
+  const fetchAutocomplete = async (query: string) => {
+    // Check 2: Don't show suggestions for empty input
+    if (!query || !hasMinimumInput(query)) {
+      setGhostText('');
+      return;
+    }
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    try {
+      const { completion } = await callAutocompleteAPI(query, 2); // service_type 2 for banners
+      if (!controller.signal.aborted && completion) {
+        setGhostText(completion);
+      }
+    } catch (err) {
+      console.log(err);
+      if (!controller.signal.aborted) {
+        setGhostText('');
+      }
+    } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+      }
+    }
+  };
+
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      fetchAutocomplete(prompt);
+    }, 500);
+
+    return () => {
+      clearTimeout(debounceTimer);
+      setGhostText(''); // Clear immediately on new input
+    };
+  }, [prompt]);
+
+  const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setPrompt(newValue);
+
+    // Immediate feedback when input becomes invalid
+    if (!newValue || !hasMinimumInput(newValue)) {
+      setGhostText('');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (ghostText && e.key === 'Tab') {
+      e.preventDefault();
+      // Accept ghost text on Tab
+      setPrompt(prompt + ghostText);
+      setGhostText('');
+    }
+  };
 
   // const validateUrl = (inputUrl: string) => {
   //   return /^https?:\/\//i.test(inputUrl);
@@ -111,21 +182,27 @@ export default function BannerAdTab() {
     <div className='space-y-8'>
       {!showPreview && !isLoading ? (
         <div className='glassmorphism p-8 rounded-xl'>
-          <div className='mb-6'>
+          <div className='mb-6 relative'>
             <Label
               htmlFor='prompt'
               className='block mb-2 font-semibold text-blue-300'
             >
               Describe your banner (Optional)
             </Label>
-            <Textarea
+
+            <TextareaWithGhost
               id='prompt'
               value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              className='w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
-              placeholder='Describe what you want your banner to look like...'
+              ghostText={hasMinimumInput(prompt) ? ghostText : ''}
+              onChange={handlePromptChange}
+              onKeyDown={handleKeyDown}
+              placeholder='Type your pitch or promo — we’ll blurbify it...'
               rows={3}
             />
+
+            <p className='mt-1 text-xs text-gray-400'>
+              Press <kbd>Tab</kbd> to accept suggestion
+            </p>
           </div>
           <div className='mb-6'>
             <Label className='block mb-2 font-semibold text-blue-300'>

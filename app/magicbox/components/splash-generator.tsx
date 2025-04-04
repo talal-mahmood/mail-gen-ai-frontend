@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -14,6 +13,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Wand2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
 import { callSplashGenerateAPI } from '@/lib/api';
+import { TextareaWithGhost } from '@/components/TextAreaWithGhost';
 
 export default function SplashGenerator() {
   const [id, setId] = useState('');
@@ -25,6 +25,90 @@ export default function SplashGenerator() {
   const [showPreview, setShowPreview] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [urlError, setUrlError] = useState('');
+
+  // Autocomplete state
+  const [ghostText, setGhostText] = useState('');
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Check 1: At least one word + space entered
+  const hasMinimumInput = (text: string) => {
+    return text.trim().includes(' ') && text.trim().length > 1;
+  };
+
+  const fetchAutocomplete = async (query: string) => {
+    // Check 2: Don't show suggestions for empty input
+    if (!query || !hasMinimumInput(query)) {
+      setGhostText('');
+      return;
+    }
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    try {
+      const response = await fetch(
+        'http://service.byteb.io:8080/v1/autocomplete/generate',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query,
+            service_type: 1,
+            style_type: styleType,
+          }),
+          signal: controller.signal,
+        }
+      );
+
+      const { completion } = await response.json();
+      if (!controller.signal.aborted && completion) {
+        setGhostText(completion);
+      }
+    } catch (err) {
+      console.log(err);
+      if (!controller.signal.aborted) {
+        setGhostText('');
+      }
+    } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null;
+      }
+    }
+  };
+
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      fetchAutocomplete(query);
+    }, 500);
+
+    return () => {
+      clearTimeout(debounceTimer);
+      setGhostText(''); // Clear immediately on new input
+    };
+  }, [query]);
+
+  const handleQueryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setQuery(newValue);
+
+    // Immediate feedback when input becomes invalid
+    if (!newValue || !hasMinimumInput(newValue)) {
+      setGhostText('');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (ghostText && e.key === 'Tab') {
+      e.preventDefault();
+      // Accept ghost text on Tab
+      setQuery(query + ghostText);
+      setGhostText('');
+    }
+  };
 
   useEffect(() => {
     console.log('id was set to: ', id);
@@ -111,21 +195,25 @@ export default function SplashGenerator() {
     <div className='space-y-8'>
       {/* User Input Form */}
       <div className='glassmorphism p-8 rounded-xl'>
-        <div className='mb-6'>
+        <div className='mb-6 relative'>
           <Label
             htmlFor='query'
             className='block mb-2 font-semibold text-blue-300'
           >
-            What does your ideal webpage look like?
+            Design your digital happy place – go wild!
           </Label>
-          <Textarea
-            id='query'
+          <TextareaWithGhost
+            id='prompt'
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className='w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
-            placeholder='Type here to generate some magic...'
+            ghostText={hasMinimumInput(query) ? ghostText : ''}
+            onChange={handleQueryChange}
+            onKeyDown={handleKeyDown}
+            placeholder='Describe what you want your banner to look like...'
             rows={3}
           />
+          <p className='mt-1 text-xs text-gray-400'>
+            Press <kbd>Tab</kbd> to accept suggestion
+          </p>
         </div>
 
         {!showPreview && (
@@ -135,15 +223,17 @@ export default function SplashGenerator() {
                 htmlFor='style_type'
                 className='block mb-2 font-semibold text-blue-300'
               >
-                Style Type:
+                Design Style:
               </Label>
               <Select value={styleType} onValueChange={setStyleType}>
                 <SelectTrigger className='w-full p-3 bg-gray-800 border border-gray-600 text-white'>
                   <SelectValue placeholder='Select style' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='casual'>Casual (Cosmic)</SelectItem>
-                  <SelectItem value='professional'>Professional</SelectItem>
+                  <SelectItem value='casual'>Bold and Flashy</SelectItem>
+                  <SelectItem value='professional'>
+                    Clean & Corporate
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -153,7 +243,7 @@ export default function SplashGenerator() {
                   htmlFor='button_url'
                   className='block mb-2 font-semibold text-blue-300'
                 >
-                  Link You Are Advertising (Optional):
+                  Got a link? Drop it here (optional):
                 </Label>
                 <Input
                   id='button_url'
@@ -195,7 +285,7 @@ export default function SplashGenerator() {
             disabled={isLoading}
             className='flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
           >
-            <Wand2 className='mr-2 h-4 w-4' /> Generate New Page
+            <Wand2 className='mr-2 h-4 w-4' /> Fire Up the Page Machine
           </Button>
 
           {currentHtml && (
