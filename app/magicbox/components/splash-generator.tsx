@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Wand2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
-import { callSplashGenerateAPI } from '@/lib/api';
+import { callAutocompleteAPI, callSplashGenerateAPI } from '@/lib/api';
 import { TextareaWithGhost } from '@/components/TextAreaWithGhost';
 
 export default function SplashGenerator() {
@@ -50,21 +50,7 @@ export default function SplashGenerator() {
     abortControllerRef.current = controller;
 
     try {
-      const response = await fetch(
-        'http://service.byteb.io:8080/v1/autocomplete/generate',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query,
-            service_type: 1,
-            style_type: styleType,
-          }),
-          signal: controller.signal,
-        }
-      );
-
-      const { completion } = await response.json();
+      const { completion } = await callAutocompleteAPI(query, 0); // service_type 2 for blurbs
       if (!controller.signal.aborted && completion) {
         setGhostText(completion);
       }
