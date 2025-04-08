@@ -6,7 +6,7 @@ import SplashGenerator from './components/splash-generator';
 import EmailCreator from './components/email-creator';
 import BannerBuilder from './components/banner-builder';
 import { Sparkles, Mail, ImageIcon } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export default function MagicBox() {
   const [activeTab, setActiveTab] = useState('splash');
@@ -20,7 +20,7 @@ export default function MagicBox() {
   if (!mounted) return null;
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-gray-900 to-gray-950 text-white p-4 sm:p-6'>
+    <div className='h-screen fixed overflow-y-auto inset-0 bg-gradient-to-br from-gray-900 to-gray-950 text-white p-4 bg-black sm:p-6'>
       <div className='max-w-6xl mx-auto'>
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -50,7 +50,6 @@ export default function MagicBox() {
               <TabsTrigger
                 value='splash'
                 className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300 text-xs sm:text-sm py-2'
-                showUnderline={false}
               >
                 <Sparkles className='mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4' />
                 <span className='hidden xs:inline'>Splash</span> Page
@@ -58,7 +57,6 @@ export default function MagicBox() {
               <TabsTrigger
                 value='email'
                 className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300 text-xs sm:text-sm py-2'
-                showUnderline={false}
               >
                 <Mail className='mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4' />
                 Email <span className='hidden xs:inline'>Creator</span>
@@ -66,7 +64,6 @@ export default function MagicBox() {
               <TabsTrigger
                 value='banner'
                 className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300 text-xs sm:text-sm py-2'
-                showUnderline={false}
               >
                 <ImageIcon className='mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4' />
                 <span className='hidden xs:inline'>Blurb/</span>Banner
@@ -74,60 +71,39 @@ export default function MagicBox() {
             </TabsList>
           </motion.div>
 
-          {/* Modified content area with enhanced animations */}
-          <div className='relative min-h-[400px]'>
-            <AnimatePresence mode='wait'>
-              {activeTab === 'splash' && (
-                <motion.div
-                  key='splash'
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{
-                    type: 'spring',
-                    damping: 25,
-                    stiffness: 300,
-                  }}
-                  className='absolute w-full'
-                >
-                  <SplashGenerator />
-                </motion.div>
-              )}
+          <div className='relative h-max pb-4'>
+            <motion.div
+              initial={false}
+              animate={{ opacity: activeTab === 'splash' ? 1 : 0 }}
+              transition={{ duration: 0.3 }}
+              className={`absolute w-full ${
+                activeTab === 'splash' ? 'block' : 'hidden'
+              }`}
+            >
+              <SplashGenerator />
+            </motion.div>
 
-              {activeTab === 'email' && (
-                <motion.div
-                  key='email'
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{
-                    type: 'spring',
-                    damping: 25,
-                    stiffness: 300,
-                  }}
-                  className='absolute w-full'
-                >
-                  <EmailCreator />
-                </motion.div>
-              )}
+            <motion.div
+              initial={false}
+              animate={{ opacity: activeTab === 'email' ? 1 : 0 }}
+              transition={{ duration: 0.3 }}
+              className={`absolute w-full ${
+                activeTab === 'email' ? 'block' : 'hidden'
+              }`}
+            >
+              <EmailCreator />
+            </motion.div>
 
-              {activeTab === 'banner' && (
-                <motion.div
-                  key='banner'
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{
-                    type: 'spring',
-                    damping: 25,
-                    stiffness: 300,
-                  }}
-                  className='absolute w-full'
-                >
-                  <BannerBuilder />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <motion.div
+              initial={false}
+              animate={{ opacity: activeTab === 'banner' ? 1 : 0 }}
+              transition={{ duration: 0.3 }}
+              className={`absolute w-full ${
+                activeTab === 'banner' ? 'block' : 'hidden'
+              }`}
+            >
+              <BannerBuilder />
+            </motion.div>
           </div>
         </Tabs>
       </div>

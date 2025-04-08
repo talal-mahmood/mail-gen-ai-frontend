@@ -27,12 +27,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en' className='min-h-max'>
+    <html lang='en'>
       {/* <Head>
         <link rel='shortcut icon' type='image/png' href='/magic-favicon.png' />
       </Head> */}
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-max`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
       </body>
