@@ -239,7 +239,7 @@ export default function SplashGenerator() {
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Tell us your vision – let's build it!
+                  Tell us your vision – let&apos;s build it!
                 </button>
 
                 {/* OR separator */}
@@ -255,7 +255,7 @@ export default function SplashGenerator() {
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Just provide a URL — we'll create from there
+                  Just provide a URL — we&apos;ll create from there
                 </button>
 
                 {/* Animated underline - only visible on desktop */}

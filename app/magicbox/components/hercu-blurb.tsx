@@ -268,7 +268,7 @@ export default function HercuBlurbTab() {
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Describe your offer, we'll blurb it up!
+                  Describe your offer, we&apos;ll blurb it up!
                 </button>
 
                 {/* OR separator */}
@@ -284,7 +284,7 @@ export default function HercuBlurbTab() {
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Give us a link — we'll do the rest
+                  Give us a link — we&apos;ll do the rest
                 </button>
               </div>
 

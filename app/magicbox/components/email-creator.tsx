@@ -279,7 +279,7 @@ export default function EmailCreator() {
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Tell us your pitch – let's make email gold!
+                  Tell us your pitch – let&apos;s make email gold!
                 </button>
 
                 {/* OR separator (optional) */}
@@ -295,7 +295,7 @@ export default function EmailCreator() {
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Just give us the link — we'll take it from there
+                  Just give us the link — we&apos;ll take it from there
                 </button>
 
                 {/* Animated underline - only visible on desktop */}
@@ -348,11 +348,11 @@ export default function EmailCreator() {
                   <SelectContent>
                     <SelectItem value='casual'>
                       Bold & Flashy Marketing Magic - more likely to land in
-                      Gmail's Promotions inbox
+                      Gmail&apos;s Promotions inbox
                     </SelectItem>
                     <SelectItem value='professional'>
                       Cozy & Personal human tone - better chance of landing in
-                      Gmail's Primary inbox
+                      Gmail&apos;s Primary inbox
                     </SelectItem>
                   </SelectContent>
                 </Select>
