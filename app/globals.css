@@ -58,32 +58,73 @@
   }
 }
 
-/* Custom styles for the glassmorphism effect */
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
 .glassmorphism {
-  background: rgba(30, 34, 53, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  background: rgba(17, 25, 40, 0.75);
+  backdrop-filter: blur(16px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.125);
+  transition: all 0.3s ease;
+}
+
+.glassmorphism:hover {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .glassmorphism {
+    padding: 16px;
+  }
+}
+
+/* Custom xs breakpoint for tab labels */
+@media (min-width: 480px) {
+  .xs\:inline {
+    display: inline;
+  }
 }
 
 /* Loading dots animation */
 .loading-dots::after {
-  content: "";
+  content: '';
   animation: dots 1.5s infinite;
 }
 
 @keyframes dots {
   0% {
-    content: ".";
+    content: '.';
   }
   33% {
-    content: "..";
+    content: '..';
   }
   66% {
-    content: "...";
+    content: '...';
   }
   100% {
-    content: ".";
+    content: '.';
   }
 }
-

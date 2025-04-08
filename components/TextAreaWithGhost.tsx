@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import type React from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Textarea as BaseTextarea } from '@/components/ui/textarea';
+import { motion } from 'framer-motion';
 
 interface TextareaWithGhostProps {
   value: string;
@@ -28,6 +30,7 @@ export const TextareaWithGhost: React.FC<TextareaWithGhostProps> = ({
   const ghostRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [minHeight, setMinHeight] = useState('auto');
+  const [isFocused, setIsFocused] = useState(false);
 
   // Function to calculate the minimum height based on rows
   const calculateMinHeight = () => {
@@ -35,7 +38,7 @@ export const TextareaWithGhost: React.FC<TextareaWithGhostProps> = ({
 
     // Calculate line height (approximate if not available)
     const lineHeight =
-      parseInt(getComputedStyle(mainRef.current).lineHeight) || 20;
+      Number.parseInt(getComputedStyle(mainRef.current).lineHeight) || 20;
     const calculatedMinHeight = lineHeight * rows + 32; // 32px for padding
 
     setMinHeight(`${calculatedMinHeight}px`);
@@ -90,14 +93,20 @@ export const TextareaWithGhost: React.FC<TextareaWithGhostProps> = ({
   }, []);
 
   return (
-    <div className='relative w-full' ref={containerRef}>
+    <motion.div
+      className='relative w-full'
+      ref={containerRef}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       {/* Ghost textarea (readonly, behind the main textarea) */}
       <BaseTextarea
         ref={ghostRef}
         value={`${value}${ghostText}`}
         readOnly
         tabIndex={-1}
-        className={`absolute top-0 left-0 w-full p-4 pr-[12px] bg-gray-800 border border-gray-600 text-gray-500 pointer-events-none overflow-hidden`}
+        className={`absolute top-0 left-0 w-full p-4 pr-[12px] bg-gray-800 border border-gray-600 text-gray-500 pointer-events-none overflow-hidden transition-all duration-200`}
         rows={rows}
         style={{
           caretColor: 'transparent',
@@ -128,8 +137,12 @@ export const TextareaWithGhost: React.FC<TextareaWithGhostProps> = ({
           adjustHeight();
           onKeyDown?.(e);
         }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         placeholder={placeholder}
-        className={`relative w-full p-4 pr-[15px] bg-transparent border-none rounded-lg text-white focus:border-blue-500 overflow-hidden ${className}`}
+        className={`relative w-full p-4 pr-[15px] bg-transparent border-none rounded-lg text-white focus:border-blue-500 overflow-hidden transition-all duration-200 ${className} ${
+          isFocused ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
+        }`}
         rows={rows}
         style={{
           whiteSpace: 'pre-wrap',
@@ -139,6 +152,15 @@ export const TextareaWithGhost: React.FC<TextareaWithGhostProps> = ({
         }}
         {...rest}
       />
-    </div>
+      <motion.p
+        className='mt-1 text-xs text-gray-400'
+        initial={{ opacity: 0 }}
+        animate={{ opacity: ghostText ? 1 : 0.7 }}
+        transition={{ duration: 0.2 }}
+      >
+        Press <kbd className='px-1 py-0.5 bg-gray-700 rounded text-xs'>Tab</kbd>{' '}
+        to accept suggestion
+      </motion.p>
+    </motion.div>
   );
 };

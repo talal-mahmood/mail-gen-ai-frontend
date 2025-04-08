@@ -1,42 +1,80 @@
 'use client';
 
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import HercuBlurbTab from './hercu-blurb';
 import BannerAdTab from './banner-ad';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 
 export default function CreatorDashboard() {
+  const [activeTab, setActiveTab] = useState('hercu');
+
   return (
-    <Tabs defaultValue='hercu' className=''>
-      <TabsList className='glassmorphism p-2 !-mt-4 h-auto rounded-xl'>
-        <TabsTrigger
-          value='hercu'
-          className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white px-10'
-        >
-          Hercu/PowerBlurb
-        </TabsTrigger>
-        <TabsTrigger
-          value='banner'
-          className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white px-10'
-        >
-          Banner Ad
-        </TabsTrigger>
-      </TabsList>
-
-      <TabsContent
-        value='hercu'
-        forceMount
-        className='data-[state=inactive]:hidden'
+    <Tabs
+      defaultValue='hercu'
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className=''
+    >
+      <motion.div
+        className='glassmorphism w-max p-2 !-mt-6 mb-2 h-auto rounded-xl'
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
       >
-        <HercuBlurbTab />
-      </TabsContent>
+        <TabsList className='flex w-max bg-transparent'>
+          <TabsTrigger
+            value='hercu'
+            className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white px-4 sm:px-10 py-2 transition-all duration-300'
+          >
+            Hercu/PowerBlurb
+          </TabsTrigger>
+          <TabsTrigger
+            value='banner'
+            className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white px-4 sm:px-10 py-2 transition-all duration-300'
+          >
+            Banner Ad
+          </TabsTrigger>
+        </TabsList>
+      </motion.div>
 
-      <TabsContent
-        value='banner'
-        forceMount
-        className='data-[state=inactive]:hidden'
-      >
-        <BannerAdTab />
-      </TabsContent>
+      <div className='relative min-h-[400px]'>
+        <AnimatePresence mode='wait'>
+          {activeTab === 'hercu' && (
+            <motion.div
+              key='hercu'
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{
+                type: 'spring',
+                damping: 25,
+                stiffness: 300,
+              }}
+              style={{ position: 'absolute', width: '100%' }}
+            >
+              <HercuBlurbTab />
+            </motion.div>
+          )}
+
+          {activeTab === 'banner' && (
+            <motion.div
+              key='banner'
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{
+                type: 'spring',
+                damping: 25,
+                stiffness: 300,
+              }}
+              style={{ position: 'absolute', width: '100%' }}
+            >
+              <BannerAdTab />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </Tabs>
   );
 }
