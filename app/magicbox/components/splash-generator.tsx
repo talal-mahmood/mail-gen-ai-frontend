@@ -208,7 +208,7 @@ export default function SplashGenerator() {
   };
 
   return (
-    <div className='space-y-8'>
+    <div className='space-y-8 mb-4'>
       {/* Notification component */}
       <Notification
         type={notification.type}

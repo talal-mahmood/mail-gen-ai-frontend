@@ -3,7 +3,7 @@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import HercuBlurbTab from './hercu-blurb';
 import BannerAdTab from './banner-ad';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 
 export default function CreatorDashboard() {
@@ -39,41 +39,37 @@ export default function CreatorDashboard() {
       </motion.div>
 
       <div className='relative min-h-[400px]'>
-        <AnimatePresence mode='wait'>
-          {activeTab === 'hercu' && (
-            <motion.div
-              key='hercu'
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{
-                type: 'spring',
-                damping: 25,
-                stiffness: 300,
-              }}
-              style={{ position: 'absolute', width: '100%' }}
-            >
-              <HercuBlurbTab />
-            </motion.div>
-          )}
+        <motion.div
+          initial={false}
+          animate={{
+            opacity: activeTab === 'hercu' ? 1 : 0,
+            x: activeTab === 'hercu' ? 0 : 20,
+          }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          style={{
+            position: 'absolute',
+            width: '100%',
+            display: activeTab === 'hercu' ? 'block' : 'none',
+          }}
+        >
+          <HercuBlurbTab />
+        </motion.div>
 
-          {activeTab === 'banner' && (
-            <motion.div
-              key='banner'
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{
-                type: 'spring',
-                damping: 25,
-                stiffness: 300,
-              }}
-              style={{ position: 'absolute', width: '100%' }}
-            >
-              <BannerAdTab />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <motion.div
+          initial={false}
+          animate={{
+            opacity: activeTab === 'banner' ? 1 : 0,
+            x: activeTab === 'banner' ? 0 : 20,
+          }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          style={{
+            position: 'absolute',
+            width: '100%',
+            display: activeTab === 'banner' ? 'block' : 'none',
+          }}
+        >
+          <BannerAdTab />
+        </motion.div>
       </div>
     </Tabs>
   );

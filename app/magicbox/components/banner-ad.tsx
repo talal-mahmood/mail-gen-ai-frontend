@@ -1,8 +1,6 @@
 'use client';
 
-import type React from 'react';
-
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -20,6 +18,8 @@ import { Slider } from '@/components/ui/slider';
 import { TextareaWithGhost } from '@/components/TextAreaWithGhost';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Notification, useNotification } from '@/components/ui/notification';
+import html2canvas from 'html2canvas';
+import gifshot from 'gifshot';
 
 export default function BannerAdTab() {
   const [prompt, setPrompt] = useState('');
@@ -33,42 +33,40 @@ export default function BannerAdTab() {
   const [bannerHeight, setBannerHeight] = useState(500);
   const [updatePrompt, setUpdatePrompt] = useState('');
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
+  const [ghostText, setGhostText] = useState('');
 
   // Notification system
   const { notification, showNotification, hideNotification } =
     useNotification();
 
   // Autocomplete state
-  const [ghostText, setGhostText] = useState('');
   const abortControllerRef = useRef<AbortController | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+  // Ref for the banner element you want to capture
+  const bannerRef = useRef<HTMLDivElement>(null);
 
-  // Check 1: At least one word + space entered
+  // Minimum input validation function
   const hasMinimumInput = (text: string) => {
     return text.trim().includes(' ') && text.trim().length > 1;
   };
 
   const fetchAutocomplete = async (query: string) => {
-    // Check 2: Don't show suggestions for empty input
     if (!query || !hasMinimumInput(query)) {
       setGhostText('');
       return;
     }
-
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-
     const controller = new AbortController();
     abortControllerRef.current = controller;
-
     try {
       const { completion } = await callAutocompleteAPI(query, 2); // service_type 2 for banners
       if (!controller.signal.aborted && completion) {
         setGhostText(completion);
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
       if (!controller.signal.aborted) {
         setGhostText('');
       }
@@ -86,15 +84,13 @@ export default function BannerAdTab() {
 
     return () => {
       clearTimeout(debounceTimer);
-      setGhostText(''); // Clear immediately on new input
+      setGhostText('');
     };
   }, [prompt]);
 
   const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     setPrompt(newValue);
-
-    // Immediate feedback when input becomes invalid
     if (!newValue || !hasMinimumInput(newValue)) {
       setGhostText('');
     }
@@ -103,7 +99,6 @@ export default function BannerAdTab() {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (ghostText && e.key === 'Tab') {
       e.preventDefault();
-      // Accept ghost text on Tab
       setPrompt(prompt + ghostText);
       setGhostText('');
     }
@@ -122,7 +117,6 @@ export default function BannerAdTab() {
     setShowPreview(false);
     setUrlError('');
 
-    // Add HTTPS if no protocol exists
     if (
       !processedUrl.startsWith('http://') &&
       !processedUrl.startsWith('https://')
@@ -154,7 +148,6 @@ export default function BannerAdTab() {
           : 'Banner generated successfully!'
       );
 
-      // Scroll to preview after a short delay
       setTimeout(() => {
         if (previewRef.current) {
           previewRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -171,10 +164,8 @@ export default function BannerAdTab() {
     }
   };
 
-  // Update URL input handler to remove previous validation
   const handleUrlChange = (newUrl: string) => {
     setUrl(newUrl);
-    // Clear any previous error state
     setUrlError('');
   };
 
@@ -203,15 +194,88 @@ export default function BannerAdTab() {
     }
   };
 
-  const downloadBanner = () => {
-    showNotification(
-      'info',
-      'Download functionality would be implemented here'
-    );
+  // Download PNG or JPEG using html2canvas (static capture)
+  const downloadBannerImage = async (format: 'png' | 'jpeg' = 'png') => {
+    if (!bannerRef.current) {
+      console.error('No banner element to capture.');
+      return;
+    }
+    try {
+      const canvas = await html2canvas(bannerRef.current, {
+        backgroundColor: null,
+      });
+      const imageData = canvas.toDataURL(`image/${format}`);
+      const link = document.createElement('a');
+      link.href = imageData;
+      link.download = `banner.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Error exporting banner to image:', err);
+      showNotification('error', 'Failed to export banner. Please try again.');
+    }
+  };
+
+  // Helper function: Capture multiple frames from the banner element
+  const captureFrames = async (numFrames: number = 10, delay: number = 200) => {
+    const frames: string[] = [];
+    if (!bannerRef.current) return frames;
+    for (let i = 0; i < numFrames; i++) {
+      // Capture the current state as a canvas snapshot
+      const canvas = await html2canvas(bannerRef.current, {
+        backgroundColor: null,
+      });
+      frames.push(canvas.toDataURL('image/png'));
+      // Wait for the specified delay before capturing the next frame
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+    return frames;
+  };
+
+  // Download animated GIF using gifshot and a series of captured frames
+  const downloadBannerGif = async () => {
+    if (!bannerRef.current) {
+      console.error('No banner element to capture for GIF.');
+      return;
+    }
+    try {
+      // Capture frames (adjust numFrames and delay as needed)
+      const frames = await captureFrames(10, 200);
+
+      gifshot.createGIF(
+        {
+          images: frames,
+          gifWidth: bannerRef.current.offsetWidth,
+          gifHeight: bannerRef.current.offsetHeight,
+          interval: 0.2, // Interval between frames in seconds (for playback)
+        },
+        function (obj: any) {
+          if (!obj.error) {
+            const image = obj.image;
+            const link = document.createElement('a');
+            link.href = image;
+            link.download = 'banner.gif';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          } else {
+            console.error('Error generating GIF:', obj.error);
+            showNotification(
+              'error',
+              'Failed to export GIF. Please try again.'
+            );
+          }
+        }
+      );
+    } catch (err) {
+      console.error('Error capturing frames for GIF:', err);
+      showNotification('error', 'Failed to capture frames for GIF.');
+    }
   };
 
   return (
-    <div className='space-y-8'>
+    <div className='space-y-8 mb-4'>
       {/* Notification component */}
       <Notification
         type={notification.type}
@@ -237,7 +301,6 @@ export default function BannerAdTab() {
               >
                 Describe your banner (Optional)
               </Label>
-
               <TextareaWithGhost
                 id='prompt'
                 value={prompt}
@@ -252,7 +315,6 @@ export default function BannerAdTab() {
               <Label className='block mb-2 font-semibold text-blue-300'>
                 Website URL to link to:
               </Label>
-
               <Input
                 type='url'
                 value={url}
@@ -279,7 +341,6 @@ export default function BannerAdTab() {
                   className='py-4'
                 />
               </div>
-
               <div className='mb-6'>
                 <Label className='block mb-2 font-semibold text-blue-300'>
                   Banner Height: {bannerHeight}px
@@ -294,7 +355,6 @@ export default function BannerAdTab() {
                 />
               </div>
             </div>
-
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -357,7 +417,6 @@ export default function BannerAdTab() {
                 rows={3}
               />
             </div>
-
             <div className='flex flex-col sm:flex-row gap-4'>
               <motion.div
                 className='flex-1'
@@ -412,10 +471,32 @@ export default function BannerAdTab() {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Button
-                    onClick={downloadBanner}
+                    onClick={downloadBannerImage.bind(null, 'png')}
                     className='bg-green-600 hover:bg-green-700 transition-all duration-200'
                   >
-                    <Download className='mr-2 h-4 w-4' /> Download
+                    <Download className='mr-2 h-4 w-4' /> PNG
+                  </Button>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    onClick={downloadBannerImage.bind(null, 'jpeg')}
+                    className='bg-blue-600 hover:bg-blue-700 transition-all duration-200'
+                  >
+                    <Download className='mr-2 h-4 w-4' /> JPEG
+                  </Button>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    onClick={downloadBannerGif}
+                    className='bg-purple-600 hover:bg-purple-700 transition-all duration-200'
+                  >
+                    <Download className='mr-2 h-4 w-4' /> GIF
                   </Button>
                 </motion.div>
                 <motion.div
@@ -424,12 +505,12 @@ export default function BannerAdTab() {
                 >
                   <Button
                     onClick={copyHtmlCode}
-                    className='bg-blue-600 hover:bg-blue-700 transition-all duration-200 relative'
+                    className='bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 relative'
                   >
                     <Copy className='mr-2 h-4 w-4' /> Copy HTML
                     {copySuccess === 'HTML' && (
                       <motion.span
-                        className='absolute inset-0 flex items-center justify-center bg-blue-700 text-white'
+                        className='absolute inset-0 flex items-center justify-center bg-indigo-700 text-white'
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -445,21 +526,20 @@ export default function BannerAdTab() {
                 >
                   <Button
                     onClick={openPreviewInNewTab}
-                    className='bg-purple-600 hover:bg-purple-700 transition-all duration-200'
+                    className='bg-yellow-600 hover:bg-yellow-700 transition-all duration-200'
                   >
                     <ExternalLink className='mr-2 h-4 w-4' /> Open in New Tab
                   </Button>
                 </motion.div>
               </div>
             </div>
+
+            {/* Banner container (use this element for exporting) */}
             <div
-              className={`w-full bg-white rounded-lg overflow-auto h-[300px] sm:h-[500px]`}
+              ref={bannerRef}
+              className='w-full bg-white rounded-lg overflow-auto h-[300px] sm:h-[500px]'
             >
-              <iframe
-                srcDoc={bannerHtml}
-                className={`w-full h-full m-auto p-2`}
-                title='Preview'
-              />
+              <div dangerouslySetInnerHTML={{ __html: bannerHtml }} />
             </div>
           </motion.div>
         )}
@@ -530,8 +610,7 @@ export default function BannerAdTab() {
                         'Started fresh with a clean slate!'
                       );
                     }}
-                    className='bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 
-                    transition-all duration-300'
+                    className='bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-300'
                   >
                     Confirm
                   </Button>
