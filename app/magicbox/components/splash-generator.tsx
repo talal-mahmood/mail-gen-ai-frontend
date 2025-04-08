@@ -25,6 +25,7 @@ export default function SplashGenerator() {
   const [showPreview, setShowPreview] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [urlError, setUrlError] = useState('');
+  const [activeInput, setActiveInput] = useState<'text' | 'url'>('text');
 
   // Autocomplete state
   const [ghostText, setGhostText] = useState('');
@@ -96,15 +97,11 @@ export default function SplashGenerator() {
     }
   };
 
-  useEffect(() => {
-    console.log('id was set to: ', id);
-  }, [id]);
-
   const generateSplashPage = async (operation: 'start_over' | 'update') => {
     let processedUrl = buttonUrl.trim();
 
-    if (!query.trim()) {
-      alert('Please enter a description of what you want to create.');
+    if (activeInput === 'text' && !query.trim()) {
+      alert('Please enter a description or provide a URL.');
       return;
     }
     if (!processedUrl) {
@@ -123,8 +120,13 @@ export default function SplashGenerator() {
       processedUrl = `https://${processedUrl}`;
     }
 
+    const finalPrompt =
+      activeInput === 'url'
+        ? `Create a splash page based on the content from this URL: ${processedUrl}`
+        : query;
+
     const requestData: any = {
-      query,
+      query: finalPrompt,
       style_type: styleType,
       operation,
       button_url: processedUrl,
@@ -137,7 +139,6 @@ export default function SplashGenerator() {
 
     try {
       const data = await callSplashGenerateAPI(requestData);
-      console.log('data is: ', data);
       const htmlOutput = data.html.replace(/```html|```/g, '').trim();
       setCurrentHtml(htmlOutput);
       setShowPreview(true);
@@ -151,10 +152,8 @@ export default function SplashGenerator() {
     }
   };
 
-  // Update URL input handler to remove previous validation
   const handleUrlChange = (newUrl: string) => {
     setButtonUrl(newUrl);
-    // Clear any previous error state
     setUrlError('');
   };
 
@@ -171,7 +170,6 @@ export default function SplashGenerator() {
   };
 
   const openPreviewInNewTab = () => {
-    // Use window.location.origin to get the current domain
     const baseUrl = window.location.origin;
     const previewUrl = `${baseUrl}/splash/${id}`;
     window.open(previewUrl, '_blank');
@@ -180,29 +178,69 @@ export default function SplashGenerator() {
   return (
     <div className='space-y-8'>
       {/* User Input Form */}
-      <div className='glassmorphism p-8 rounded-xl'>
-        <div className='mb-6 relative'>
-          <Label
-            htmlFor='query'
-            className='block mb-2 font-semibold text-blue-300'
-          >
-            Design your digital happy place – go wild!
-          </Label>
-          <TextareaWithGhost
-            id='prompt'
-            value={query}
-            ghostText={hasMinimumInput(query) ? ghostText : ''}
-            onChange={handleQueryChange}
-            onKeyDown={handleKeyDown}
-            placeholder='Describe what you want your banner to look like...'
-            rows={3}
-          />
-          <p className='mt-1 text-xs text-gray-400'>
-            Press <kbd>Tab</kbd> to accept suggestion
-          </p>
-        </div>
+      {!showPreview && !isLoading ? (
+        <div className='glassmorphism p-8 rounded-xl'>
+          <div className='w-full relative mb-6'>
+            <div className='flex gap-4 items-center justify-between w-full relative'>
+              {/* Tabs */}
+              <button
+                onClick={() => setActiveInput('text')}
+                className={`relative z-10 px-4 py-2 transition-all duration-300 ${
+                  activeInput === 'text'
+                    ? 'text-blue-400 font-semibold'
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                Tell us your vision – let's build it!
+              </button>
 
-        {!showPreview && (
+              {/* OR separator */}
+              <div className='text-gray-500 font-medium select-none'>
+                - OR -
+              </div>
+
+              <button
+                onClick={() => setActiveInput('url')}
+                className={`relative z-10 px-4 py-2 transition-all duration-300 ${
+                  activeInput === 'url'
+                    ? 'text-blue-400 font-semibold'
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                Just provide a URL — we'll create from there
+              </button>
+
+              {/* Animated underline */}
+              <div
+                className='absolute bottom-0 h-[2px] bg-blue-400 transition-all duration-300'
+                style={{
+                  left: activeInput === 'text' ? '0%' : 'calc(100% - 353px)', // 2rem accounts for the gap + OR width
+                  width: activeInput === 'text' ? '275px' : '352px',
+                }}
+              ></div>
+            </div>
+          </div>
+
+          {activeInput === 'text' && (
+            <div className='mb-6 relative'>
+              <Label
+                htmlFor='query'
+                className='block mb-2 font-semibold text-blue-300'
+              >
+                Design your digital happy place – go wild!
+              </Label>
+              <TextareaWithGhost
+                id='prompt'
+                value={query}
+                ghostText={hasMinimumInput(query) ? ghostText : ''}
+                onChange={handleQueryChange}
+                onKeyDown={handleKeyDown}
+                placeholder={`Describe what you want your page to look like…`}
+                rows={3}
+              />
+            </div>
+          )}
+
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
             <div>
               <Label
@@ -224,74 +262,76 @@ export default function SplashGenerator() {
               </Select>
             </div>
             <div>
-              <div>
-                <Label
-                  htmlFor='button_url'
-                  className='block mb-2 font-semibold text-blue-300'
-                >
-                  Got a link? Drop it here (optional):
-                </Label>
-                <Input
-                  id='button_url'
-                  type='url'
-                  value={buttonUrl}
-                  onChange={(e) => handleUrlChange(e.target.value)}
-                  // onChange={(e) => {
-                  //   const newUrl = e.target.value;
-                  //   setButtonUrl(newUrl);
-                  //   // Validate that the URL starts with "http://" or "https://"
-                  //   if (newUrl && !/^https?:\/\//i.test(newUrl)) {
-                  //     setUrlError(
-                  //       'URL must start with "http://" or "https://".'
-                  //     );
-                  //   } else {
-                  //     setUrlError('');
-                  //   }
-                  // }}
-                  className='w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
-                  placeholder='example.com or https://example.com'
-                />
-                {urlError && (
-                  <p className='mt-1 text-xs text-red-500'>{urlError}</p>
-                )}
-              </div>
+              <Label
+                htmlFor='button_url'
+                className='block mb-2 font-semibold text-blue-300'
+              >
+                Destination URL:
+              </Label>
+              <Input
+                id='button_url'
+                type='url'
+                value={buttonUrl}
+                onChange={(e) => handleUrlChange(e.target.value)}
+                className='w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-blue-500'
+                placeholder='example.com or https://example.com'
+                required
+              />
+              {urlError && (
+                <p className='mt-1 text-xs text-red-500'>{urlError}</p>
+              )}
             </div>
           </div>
-        )}
 
-        <div className='flex flex-col sm:flex-row gap-4'>
           <Button
-            onClick={() => {
-              if (showPreview) {
-                setShowConfirmation(true);
-              } else {
-                generateSplashPage('start_over');
-              }
-            }}
+            onClick={() => generateSplashPage('start_over')}
             disabled={isLoading}
-            className='flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
+            className='w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
           >
-            <Wand2 className='mr-2 h-4 w-4' /> Fire Up the Page Machine
+            <Wand2 className='mr-2 h-4 w-4' /> Create Splash Page
           </Button>
+        </div>
+      ) : (
+        <div className='glassmorphism p-8 rounded-xl'>
+          <div className='mb-6'>
+            <Label className='block mb-2 font-semibold text-blue-300'>
+              Refine Your Page
+            </Label>
+            <TextareaWithGhost
+              id='prompt'
+              value={query}
+              ghostText={hasMinimumInput(query) ? ghostText : ''}
+              onChange={handleQueryChange}
+              onKeyDown={handleKeyDown}
+              placeholder={`Describe what you want your page to look like…`}
+              rows={3}
+            />
+          </div>
 
-          {currentHtml && (
+          <div className='flex gap-4'>
+            <Button
+              onClick={() => setShowConfirmation(true)}
+              className='flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
+            >
+              <Wand2 className='mr-2 h-4 w-4' /> Wipe The Slate Clean
+            </Button>
             <Button
               onClick={() => generateSplashPage('update')}
               disabled={isLoading}
               className='flex-1 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700'
             >
-              <RefreshCw className='mr-2 h-4 w-4' /> Update Current Page
+              <RefreshCw className='mr-2 h-4 w-4' /> Update Page
             </Button>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Loading Indicator */}
       {isLoading && (
         <div className='flex flex-col items-center justify-center my-12'>
           <div className='w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4'></div>
           <p className='text-xl text-blue-300 loading-dots'>
-            Generating your splash page
+            {showPreview ? 'Updating' : 'Generating'} your splash page
           </p>
         </div>
       )}
@@ -318,7 +358,7 @@ export default function SplashGenerator() {
               </Button>
             </div>
           </div>
-          <div className='w-full h-[500px] bg-white rounded-lg overflow-hidden'>
+          <div className='w-full h-[500px] bg-white rounded-lg'>
             <iframe
               srcDoc={currentHtml}
               className='w-full h-full'
@@ -327,15 +367,17 @@ export default function SplashGenerator() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Dialog */}
       {showConfirmation && (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
           <div className='bg-gray-800 p-6 rounded-lg max-w-md w-full'>
             <h3 className='text-lg font-semibold text-white mb-4'>
-              Confirm Reset
+              Clear the Slate?
             </h3>
             <p className='text-gray-300 mb-6'>
-              This will clear all current progress and start fresh. Are you
-              sure?
+              Poof! All your current work will vanish so you can start something
+              brand new. Ready to begin again?
             </p>
             <div className='flex justify-end gap-3'>
               <Button
@@ -347,7 +389,6 @@ export default function SplashGenerator() {
               </Button>
               <Button
                 onClick={() => {
-                  // Reset all states
                   setId('');
                   setQuery('');
                   setStyleType('casual');
@@ -356,8 +397,7 @@ export default function SplashGenerator() {
                   setShowPreview(false);
                   setShowConfirmation(false);
                 }}
-                className='bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 
-           transition-all'
+                className='bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all'
               >
                 Confirm
               </Button>

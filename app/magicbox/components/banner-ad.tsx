@@ -200,9 +200,7 @@ export default function BannerAdTab() {
               rows={3}
             />
 
-            <p className='mt-1 text-xs text-gray-400'>
-              Press <kbd>Tab</kbd> to accept suggestion
-            </p>
+            
           </div>
           <div className='mb-6'>
             <Label className='block mb-2 font-semibold text-blue-300'>
@@ -251,7 +249,7 @@ export default function BannerAdTab() {
               </Label>
               <Slider
                 value={[bannerHeight]}
-                min={100}
+                min={50}
                 max={2000}
                 step={10}
                 onValueChange={(value) => setBannerHeight(value[0])}
@@ -354,10 +352,11 @@ export default function BannerAdTab() {
         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
           <div className='bg-gray-800 p-6 rounded-lg max-w-md w-full'>
             <h3 className='text-lg font-semibold text-white mb-4'>
-              Confirm Reset
+              Clear the Slate?
             </h3>
             <p className='text-gray-300 mb-6'>
-              This will clear all inputs and start fresh. Are you sure?
+              Poof! All your current work will vanish so you can start something
+              brand new. Ready to begin again?
             </p>
             <div className='flex justify-end gap-3'>
               <Button

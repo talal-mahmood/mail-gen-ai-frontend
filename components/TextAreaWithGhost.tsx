@@ -139,6 +139,9 @@ export const TextareaWithGhost: React.FC<TextareaWithGhostProps> = ({
         }}
         {...rest}
       />
+      <p className='mt-1 text-xs text-gray-400'>
+        Press <kbd>Tab</kbd> to accept suggestion
+      </p>
     </div>
   );
 };

@@ -208,7 +208,8 @@ export default function EmailCreator() {
       {!showPreview && !isLoading ? (
         <div className='glassmorphism p-8 rounded-xl'>
           <div className='w-full relative mb-6'>
-            <div className='flex gap-4'>
+            <div className='flex gap-4 items-center justify-between w-full relative'>
+              {/* Tabs */}
               <button
                 onClick={() => setActiveInput('text')}
                 className={`relative z-10 px-4 py-2 transition-all duration-300 ${
@@ -219,6 +220,12 @@ export default function EmailCreator() {
               >
                 Tell us your pitch – let’s make email gold!
               </button>
+
+              {/* OR separator (optional) */}
+              <div className='text-gray-500 font-medium select-none'>
+                - OR -
+              </div>
+
               <button
                 onClick={() => setActiveInput('url')}
                 className={`relative z-10 px-4 py-2 transition-all duration-300 ${
@@ -229,18 +236,16 @@ export default function EmailCreator() {
               >
                 Just give us the link — we’ll take it from there
               </button>
-            </div>
 
-            {/* Animated underline */}
-            <div
-              className='absolute bottom-0 left-0 h-[2px] bg-blue-400 transition-all duration-300'
-              style={{
-                width: activeInput === 'text' ? '336px' : '372px',
-                transform: `translateX(${
-                  activeInput === 'text' ? '0' : 'calc(336px)'
-                })`,
-              }}
-            ></div>
+              {/* Animated underline */}
+              <div
+                className='absolute bottom-0 h-[2px] bg-blue-400 transition-all duration-300'
+                style={{
+                  left: activeInput === 'text' ? '0%' : 'calc(100% - 360px)',
+                  width: activeInput === 'text' ? '336px' : '356px',
+                }}
+              ></div>
+            </div>
           </div>
 
           {activeInput === 'text' && (
@@ -267,12 +272,12 @@ export default function EmailCreator() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='casual'>
-                    Cozy & Personal human tone - better chance of landing in
-                    Gmail’s Primary inbox
-                  </SelectItem>
-                  <SelectItem value='professional'>
                     Bold & Flashy Marketing Magic - more likely to land in
                     Gmail’s Promotions inbox
+                  </SelectItem>
+                  <SelectItem value='professional'>
+                    Cozy & Personal human tone - better chance of landing in
+                    Gmail’s Primary inbox
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -392,10 +397,11 @@ export default function EmailCreator() {
         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
           <div className='bg-gray-800 p-6 rounded-lg max-w-md w-full'>
             <h3 className='text-lg font-semibold text-white mb-4'>
-              Confirm Reset
+              Clear the Slate?
             </h3>
             <p className='text-gray-300 mb-6'>
-              This will clear all inputs and start fresh. Are you sure?
+              Poof! All your current work will vanish so you can start something
+              brand new. Ready to begin again?
             </p>
             <div className='flex justify-end gap-3'>
               <Button

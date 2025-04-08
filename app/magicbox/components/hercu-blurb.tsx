@@ -201,7 +201,8 @@ export default function HercuBlurbTab() {
       {!showPreview && !isLoading ? (
         <div className='glassmorphism p-8 rounded-xl'>
           <div className='w-full relative mb-6'>
-            <div className='flex gap-4'>
+            <div className='flex gap-4 items-center justify-between w-full relative'>
+              {/* Tabs */}
               <button
                 onClick={() => setActiveInput('text')}
                 className={`relative z-10 px-4 py-2 transition-all duration-300 ${
@@ -212,6 +213,12 @@ export default function HercuBlurbTab() {
               >
                 Describe your offer, we’ll blurb it up!
               </button>
+
+              {/* OR separator */}
+              <div className='text-gray-500 font-medium select-none'>
+                - OR -
+              </div>
+
               <button
                 onClick={() => setActiveInput('url')}
                 className={`relative z-10 px-4 py-2 transition-all duration-300 ${
@@ -226,12 +233,10 @@ export default function HercuBlurbTab() {
 
             {/* Animated underline */}
             <div
-              className='absolute bottom-0 left-0 h-[2px] bg-blue-400 transition-all duration-300'
+              className='absolute bottom-0 h-[2px] bg-blue-400 transition-all duration-300'
               style={{
-                width: activeInput === 'text' ? '300px' : '284px',
-                transform: `translateX(${
-                  activeInput === 'text' ? '0' : 'calc(300px)'
-                })`,
+                left: activeInput === 'text' ? '0%' : 'calc(100% - 264px)', // 2rem accounts for the gap + OR width
+                width: activeInput === 'text' ? '300px' : '264px',
               }}
             ></div>
           </div>
@@ -375,10 +380,11 @@ export default function HercuBlurbTab() {
         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
           <div className='bg-gray-800 p-6 rounded-lg max-w-md w-full'>
             <h3 className='text-lg font-semibold text-white mb-4'>
-              Confirm Reset
+              Clear the Slate?
             </h3>
             <p className='text-gray-300 mb-6'>
-              This will clear all inputs and start fresh. Are you sure?
+              Poof! All your current work will vanish so you can start something
+              brand new. Ready to begin again?
             </p>
             <div className='flex justify-end gap-3'>
               <Button
