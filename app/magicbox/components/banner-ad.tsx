@@ -18,7 +18,7 @@ import { Slider } from '@/components/ui/slider';
 import { TextareaWithGhost } from '@/components/TextAreaWithGhost';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Notification, useNotification } from '@/components/ui/notification';
-import html2canvas from 'html2canvas';
+import { toPng, toJpeg } from 'html-to-image';
 import gifshot from 'gifshot';
 
 export default function BannerAdTab() {
@@ -196,40 +196,123 @@ export default function BannerAdTab() {
 
   // Download PNG or JPEG using html2canvas (static capture)
   const downloadBannerImage = async (format: 'png' | 'jpeg' = 'png') => {
-    if (!bannerRef.current) {
-      console.error('No banner element to capture.');
-      return;
-    }
+    const bannerContent = document.getElementById('banner-content-wrapper');
+    if (!bannerContent) return;
+
     try {
-      const canvas = await html2canvas(bannerRef.current, {
-        backgroundColor: null,
-      });
-      const imageData = canvas.toDataURL(`image/${format}`);
+      // Force-load fonts before capture
+      await document.fonts.ready;
+
+      const dataUrl =
+        format === 'png'
+          ? await toPng(bannerContent, {
+              quality: 1,
+              backgroundColor: '#ffffff',
+              pixelRatio: 2,
+              cacheBust: true,
+              style: {
+                color: '#000000 !important',
+                mixBlendMode: 'normal !important',
+                opacity: '1 !important',
+              },
+              filter: (node) => {
+                // Remove any hidden elements
+                if (node instanceof HTMLElement) {
+                  return window.getComputedStyle(node).display !== 'none';
+                }
+                return true;
+              },
+              // onclone: (clonedElement) => {
+              //   // Force visible text styles in clone
+              //   clonedElement.style.color = '#000000';
+              //   clonedElement.style.opacity = '1';
+              //   clonedElement.style.mixBlendMode = 'normal';
+              // },
+            })
+          : await toJpeg(bannerContent, {
+              quality: 1,
+              backgroundColor: '#ffffff',
+              pixelRatio: 2,
+              cacheBust: true,
+              style: {
+                color: '#000000 !important',
+                mixBlendMode: 'normal !important',
+                opacity: '1 !important',
+              },
+              filter: (node) => {
+                // Remove any hidden elements
+                if (node instanceof HTMLElement) {
+                  return window.getComputedStyle(node).display !== 'none';
+                }
+                return true;
+              },
+              // onclone: (clonedElement) => {
+              //   clonedElement.style.color = '#000000';
+              //   clonedElement.style.opacity = '1';
+              //   clonedElement.style.mixBlendMode = 'normal';
+              // },
+            });
+
       const link = document.createElement('a');
-      link.href = imageData;
+      link.href = dataUrl;
       link.download = `banner.${format}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (err) {
-      console.error('Error exporting banner to image:', err);
-      showNotification('error', 'Failed to export banner. Please try again.');
+      console.error('Error exporting banner:', err);
+      showNotification('error', 'Failed to export banner');
     }
   };
 
   // Helper function: Capture multiple frames from the banner element
-  const captureFrames = async (numFrames: number = 10, delay: number = 200) => {
+  const captureFrames = async (numFrames = 10, delay = 200) => {
+    const bannerContent = document.getElementById('banner-content-wrapper');
+    if (!bannerContent) return [];
+
     const frames: string[] = [];
-    if (!bannerRef.current) return frames;
-    for (let i = 0; i < numFrames; i++) {
-      // Capture the current state as a canvas snapshot
-      const canvas = await html2canvas(bannerRef.current, {
-        backgroundColor: null,
-      });
-      frames.push(canvas.toDataURL('image/png'));
-      // Wait for the specified delay before capturing the next frame
-      await new Promise((resolve) => setTimeout(resolve, delay));
+
+    // // Create a clone with forced dimensions and styles
+    // const clone = bannerContent.cloneNode(true) as HTMLElement;
+    // clone.style.position = 'fixed';
+    // clone.style.left = '-9999px';
+    // clone.style.zIndex = '99999';
+    // clone.style.visibility = 'hidden';
+    // document.body.appendChild(clone);
+
+    try {
+      for (let i = 0; i < numFrames; i++) {
+        const dataUrl = await toPng(bannerContent, {
+          quality: 1,
+          backgroundColor: '#ffffff',
+          pixelRatio: 2,
+          cacheBust: true,
+          style: {
+            color: '#000000 !important',
+            mixBlendMode: 'normal !important',
+            opacity: '1 !important',
+          },
+          filter: (node) => {
+            // Remove any hidden elements
+            if (node instanceof HTMLElement) {
+              return window.getComputedStyle(node).display !== 'none';
+            }
+            return true;
+          },
+          // onclone: (clonedElement) => {
+          //   // Force visible text styles in clone
+          //   clonedElement.style.color = '#000000';
+          //   clonedElement.style.opacity = '1';
+          //   clonedElement.style.mixBlendMode = 'normal';
+          // },
+        });
+        frames.push(dataUrl);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    } finally {
+      // document.body.removeChild(clone);
     }
+
     return frames;
   };
 
@@ -246,9 +329,9 @@ export default function BannerAdTab() {
       gifshot.createGIF(
         {
           images: frames,
-          gifWidth: bannerRef.current.offsetWidth,
-          gifHeight: bannerRef.current.offsetHeight,
-          interval: 0.2, // Interval between frames in seconds (for playback)
+          gifWidth: bannerWidth,
+          gifHeight: bannerHeight,
+          interval: 0.1, // Interval between frames in seconds (for playback)
         },
         function (obj: any) {
           if (!obj.error) {
@@ -539,7 +622,17 @@ export default function BannerAdTab() {
               ref={bannerRef}
               className='w-full bg-white rounded-lg overflow-auto h-[300px] sm:h-[500px]'
             >
-              <div dangerouslySetInnerHTML={{ __html: bannerHtml }} />
+              <div
+                id='banner-content-wrapper'
+                style={{
+                  width: `${bannerWidth}px`,
+                  height: `${bannerHeight}px`,
+                  minWidth: `${bannerWidth}px`,
+                  minHeight: `${bannerHeight}px`,
+                }}
+              >
+                <div dangerouslySetInnerHTML={{ __html: bannerHtml }} />
+              </div>
             </div>
           </motion.div>
         )}
