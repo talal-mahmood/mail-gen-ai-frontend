@@ -34,6 +34,12 @@ export default function BannerAdTab() {
   const [updatePrompt, setUpdatePrompt] = useState('');
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [ghostText, setGhostText] = useState('');
+  const [downloadStates, setDownloadStates] = useState({
+    png: false,
+    jpeg: false,
+    gif: false,
+    html: false,
+  });
 
   // Notification system
   const { notification, showNotification, hideNotification } =
@@ -169,6 +175,27 @@ export default function BannerAdTab() {
     setUrlError('');
   };
 
+  const downloadHtmlFile = () => {
+    try {
+      setDownloadStates((prev) => ({ ...prev, html: true }));
+      const blob = new Blob([bannerHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `banner-${new Date().toISOString().slice(0, 10)}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showNotification('success', 'HTML file downloaded!');
+    } catch (err) {
+      console.error('Error downloading HTML:', err);
+      showNotification('error', 'Failed to download HTML file');
+    } finally {
+      setDownloadStates((prev) => ({ ...prev, html: false }));
+    }
+  };
+
   const copyHtmlCode = () => {
     navigator.clipboard
       .writeText(bannerHtml)
@@ -200,6 +227,7 @@ export default function BannerAdTab() {
     if (!bannerContent) return;
 
     try {
+      setDownloadStates((prev) => ({ ...prev, [format]: true }));
       // Force-load fonts before capture
       await document.fonts.ready;
 
@@ -262,6 +290,8 @@ export default function BannerAdTab() {
     } catch (err) {
       console.error('Error exporting banner:', err);
       showNotification('error', 'Failed to export banner');
+    } finally {
+      setDownloadStates((prev) => ({ ...prev, [format]: false }));
     }
   };
 
@@ -323,6 +353,7 @@ export default function BannerAdTab() {
       return;
     }
     try {
+      setDownloadStates((prev) => ({ ...prev, gif: true }));
       // Capture frames (adjust numFrames and delay as needed)
       const frames = await captureFrames(10, 200);
 
@@ -354,6 +385,8 @@ export default function BannerAdTab() {
     } catch (err) {
       console.error('Error capturing frames for GIF:', err);
       showNotification('error', 'Failed to capture frames for GIF.');
+    } finally {
+      setDownloadStates((prev) => ({ ...prev, gif: false }));
     }
   };
 
@@ -555,31 +588,72 @@ export default function BannerAdTab() {
                 >
                   <Button
                     onClick={downloadBannerImage.bind(null, 'png')}
+                    disabled={downloadStates.png}
                     className='bg-green-600 hover:bg-green-700 transition-all duration-200'
                   >
-                    <Download className='mr-2 h-4 w-4' /> PNG
+                    {downloadStates.png ? (
+                      <RefreshCw className='mr-2 h-4 w-4 animate-spin' />
+                    ) : (
+                      <Download className='mr-2 h-4 w-4' />
+                    )}
+                    PNG
                   </Button>
                 </motion.div>
+
+                {/* JPEG Button */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <Button
                     onClick={downloadBannerImage.bind(null, 'jpeg')}
+                    disabled={downloadStates.jpeg}
                     className='bg-blue-600 hover:bg-blue-700 transition-all duration-200'
                   >
-                    <Download className='mr-2 h-4 w-4' /> JPEG
+                    {downloadStates.jpeg ? (
+                      <RefreshCw className='mr-2 h-4 w-4 animate-spin' />
+                    ) : (
+                      <Download className='mr-2 h-4 w-4' />
+                    )}
+                    JPEG
                   </Button>
                 </motion.div>
+
+                {/* GIF Button */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <Button
                     onClick={downloadBannerGif}
+                    disabled={downloadStates.gif}
                     className='bg-purple-600 hover:bg-purple-700 transition-all duration-200'
                   >
-                    <Download className='mr-2 h-4 w-4' /> GIF
+                    {downloadStates.gif ? (
+                      <RefreshCw className='mr-2 h-4 w-4 animate-spin' />
+                    ) : (
+                      <Download className='mr-2 h-4 w-4' />
+                    )}
+                    GIF
+                  </Button>
+                </motion.div>
+
+                {/* HTML File Button */}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    onClick={downloadHtmlFile}
+                    disabled={downloadStates.html}
+                    className='bg-pink-600 hover:bg-pink-700 transition-all duration-200'
+                  >
+                    {downloadStates.html ? (
+                      <RefreshCw className='mr-2 h-4 w-4 animate-spin' />
+                    ) : (
+                      <Download className='mr-2 h-4 w-4' />
+                    )}
+                    HTML File
                   </Button>
                 </motion.div>
                 <motion.div
@@ -620,7 +694,7 @@ export default function BannerAdTab() {
             {/* Banner container (use this element for exporting) */}
             <div
               ref={bannerRef}
-              className='w-full bg-white rounded-lg overflow-auto h-[300px] sm:h-[500px]'
+              className='m-auto w-full rounded-lg overflow-auto max-h-max max-w-max h-[300px] sm:h-[500px]'
             >
               <div
                 id='banner-content-wrapper'
