@@ -18,7 +18,7 @@ import { Slider } from '@/components/ui/slider';
 import { TextareaWithGhost } from '@/components/TextAreaWithGhost';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Notification, useNotification } from '@/components/ui/notification';
-import html2canvas from 'html2canvas';
+import { toPng, toJpeg } from 'html-to-image';
 import gifshot from 'gifshot';
 
 export default function BannerAdTab() {
@@ -34,6 +34,12 @@ export default function BannerAdTab() {
   const [updatePrompt, setUpdatePrompt] = useState('');
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [ghostText, setGhostText] = useState('');
+  const [downloadStates, setDownloadStates] = useState({
+    png: false,
+    jpeg: false,
+    gif: false,
+    html: false,
+  });
 
   // Notification system
   const { notification, showNotification, hideNotification } =
@@ -169,6 +175,27 @@ export default function BannerAdTab() {
     setUrlError('');
   };
 
+  const downloadHtmlFile = () => {
+    try {
+      setDownloadStates((prev) => ({ ...prev, html: true }));
+      const blob = new Blob([bannerHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `banner-${new Date().toISOString().slice(0, 10)}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showNotification('success', 'HTML file downloaded!');
+    } catch (err) {
+      console.error('Error downloading HTML:', err);
+      showNotification('error', 'Failed to download HTML file');
+    } finally {
+      setDownloadStates((prev) => ({ ...prev, html: false }));
+    }
+  };
+
   const copyHtmlCode = () => {
     navigator.clipboard
       .writeText(bannerHtml)
@@ -196,40 +223,126 @@ export default function BannerAdTab() {
 
   // Download PNG or JPEG using html2canvas (static capture)
   const downloadBannerImage = async (format: 'png' | 'jpeg' = 'png') => {
-    if (!bannerRef.current) {
-      console.error('No banner element to capture.');
-      return;
-    }
+    const bannerContent = document.getElementById('banner-content-wrapper');
+    if (!bannerContent) return;
+
     try {
-      const canvas = await html2canvas(bannerRef.current, {
-        backgroundColor: null,
-      });
-      const imageData = canvas.toDataURL(`image/${format}`);
+      setDownloadStates((prev) => ({ ...prev, [format]: true }));
+      // Force-load fonts before capture
+      await document.fonts.ready;
+
+      const dataUrl =
+        format === 'png'
+          ? await toPng(bannerContent, {
+              quality: 1,
+              backgroundColor: '#ffffff',
+              pixelRatio: 2,
+              cacheBust: true,
+              style: {
+                color: '#000000 !important',
+                mixBlendMode: 'normal !important',
+                opacity: '1 !important',
+              },
+              filter: (node) => {
+                // Remove any hidden elements
+                if (node instanceof HTMLElement) {
+                  return window.getComputedStyle(node).display !== 'none';
+                }
+                return true;
+              },
+              // onclone: (clonedElement) => {
+              //   // Force visible text styles in clone
+              //   clonedElement.style.color = '#000000';
+              //   clonedElement.style.opacity = '1';
+              //   clonedElement.style.mixBlendMode = 'normal';
+              // },
+            })
+          : await toJpeg(bannerContent, {
+              quality: 1,
+              backgroundColor: '#ffffff',
+              pixelRatio: 2,
+              cacheBust: true,
+              style: {
+                color: '#000000 !important',
+                mixBlendMode: 'normal !important',
+                opacity: '1 !important',
+              },
+              filter: (node) => {
+                // Remove any hidden elements
+                if (node instanceof HTMLElement) {
+                  return window.getComputedStyle(node).display !== 'none';
+                }
+                return true;
+              },
+              // onclone: (clonedElement) => {
+              //   clonedElement.style.color = '#000000';
+              //   clonedElement.style.opacity = '1';
+              //   clonedElement.style.mixBlendMode = 'normal';
+              // },
+            });
+
       const link = document.createElement('a');
-      link.href = imageData;
+      link.href = dataUrl;
       link.download = `banner.${format}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (err) {
-      console.error('Error exporting banner to image:', err);
-      showNotification('error', 'Failed to export banner. Please try again.');
+      console.error('Error exporting banner:', err);
+      showNotification('error', 'Failed to export banner');
+    } finally {
+      setDownloadStates((prev) => ({ ...prev, [format]: false }));
     }
   };
 
   // Helper function: Capture multiple frames from the banner element
-  const captureFrames = async (numFrames: number = 10, delay: number = 200) => {
+  const captureFrames = async (numFrames = 10, delay = 200) => {
+    const bannerContent = document.getElementById('banner-content-wrapper');
+    if (!bannerContent) return [];
+
     const frames: string[] = [];
-    if (!bannerRef.current) return frames;
-    for (let i = 0; i < numFrames; i++) {
-      // Capture the current state as a canvas snapshot
-      const canvas = await html2canvas(bannerRef.current, {
-        backgroundColor: null,
-      });
-      frames.push(canvas.toDataURL('image/png'));
-      // Wait for the specified delay before capturing the next frame
-      await new Promise((resolve) => setTimeout(resolve, delay));
+
+    // // Create a clone with forced dimensions and styles
+    // const clone = bannerContent.cloneNode(true) as HTMLElement;
+    // clone.style.position = 'fixed';
+    // clone.style.left = '-9999px';
+    // clone.style.zIndex = '99999';
+    // clone.style.visibility = 'hidden';
+    // document.body.appendChild(clone);
+
+    try {
+      for (let i = 0; i < numFrames; i++) {
+        const dataUrl = await toPng(bannerContent, {
+          quality: 1,
+          backgroundColor: '#ffffff',
+          pixelRatio: 2,
+          cacheBust: true,
+          style: {
+            color: '#000000 !important',
+            mixBlendMode: 'normal !important',
+            opacity: '1 !important',
+          },
+          filter: (node) => {
+            // Remove any hidden elements
+            if (node instanceof HTMLElement) {
+              return window.getComputedStyle(node).display !== 'none';
+            }
+            return true;
+          },
+          // onclone: (clonedElement) => {
+          //   // Force visible text styles in clone
+          //   clonedElement.style.color = '#000000';
+          //   clonedElement.style.opacity = '1';
+          //   clonedElement.style.mixBlendMode = 'normal';
+          // },
+        });
+        frames.push(dataUrl);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    } finally {
+      // document.body.removeChild(clone);
     }
+
     return frames;
   };
 
@@ -240,15 +353,16 @@ export default function BannerAdTab() {
       return;
     }
     try {
+      setDownloadStates((prev) => ({ ...prev, gif: true }));
       // Capture frames (adjust numFrames and delay as needed)
       const frames = await captureFrames(10, 200);
 
       gifshot.createGIF(
         {
           images: frames,
-          gifWidth: bannerRef.current.offsetWidth,
-          gifHeight: bannerRef.current.offsetHeight,
-          interval: 0.2, // Interval between frames in seconds (for playback)
+          gifWidth: bannerWidth,
+          gifHeight: bannerHeight,
+          interval: 0.1, // Interval between frames in seconds (for playback)
         },
         function (obj: any) {
           if (!obj.error) {
@@ -271,6 +385,8 @@ export default function BannerAdTab() {
     } catch (err) {
       console.error('Error capturing frames for GIF:', err);
       showNotification('error', 'Failed to capture frames for GIF.');
+    } finally {
+      setDownloadStates((prev) => ({ ...prev, gif: false }));
     }
   };
 
@@ -472,31 +588,72 @@ export default function BannerAdTab() {
                 >
                   <Button
                     onClick={downloadBannerImage.bind(null, 'png')}
+                    disabled={downloadStates.png}
                     className='bg-green-600 hover:bg-green-700 transition-all duration-200'
                   >
-                    <Download className='mr-2 h-4 w-4' /> PNG
+                    {downloadStates.png ? (
+                      <RefreshCw className='mr-2 h-4 w-4 animate-spin' />
+                    ) : (
+                      <Download className='mr-2 h-4 w-4' />
+                    )}
+                    PNG
                   </Button>
                 </motion.div>
+
+                {/* JPEG Button */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <Button
                     onClick={downloadBannerImage.bind(null, 'jpeg')}
+                    disabled={downloadStates.jpeg}
                     className='bg-blue-600 hover:bg-blue-700 transition-all duration-200'
                   >
-                    <Download className='mr-2 h-4 w-4' /> JPEG
+                    {downloadStates.jpeg ? (
+                      <RefreshCw className='mr-2 h-4 w-4 animate-spin' />
+                    ) : (
+                      <Download className='mr-2 h-4 w-4' />
+                    )}
+                    JPEG
                   </Button>
                 </motion.div>
+
+                {/* GIF Button */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <Button
                     onClick={downloadBannerGif}
+                    disabled={downloadStates.gif}
                     className='bg-purple-600 hover:bg-purple-700 transition-all duration-200'
                   >
-                    <Download className='mr-2 h-4 w-4' /> GIF
+                    {downloadStates.gif ? (
+                      <RefreshCw className='mr-2 h-4 w-4 animate-spin' />
+                    ) : (
+                      <Download className='mr-2 h-4 w-4' />
+                    )}
+                    GIF
+                  </Button>
+                </motion.div>
+
+                {/* HTML File Button */}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    onClick={downloadHtmlFile}
+                    disabled={downloadStates.html}
+                    className='bg-pink-600 hover:bg-pink-700 transition-all duration-200'
+                  >
+                    {downloadStates.html ? (
+                      <RefreshCw className='mr-2 h-4 w-4 animate-spin' />
+                    ) : (
+                      <Download className='mr-2 h-4 w-4' />
+                    )}
+                    HTML File
                   </Button>
                 </motion.div>
                 <motion.div
@@ -537,9 +694,19 @@ export default function BannerAdTab() {
             {/* Banner container (use this element for exporting) */}
             <div
               ref={bannerRef}
-              className='w-full bg-white rounded-lg overflow-auto h-[300px] sm:h-[500px]'
+              className='m-auto w-full rounded-lg overflow-auto max-h-max max-w-max h-[300px] sm:h-[500px]'
             >
-              <div dangerouslySetInnerHTML={{ __html: bannerHtml }} />
+              <div
+                id='banner-content-wrapper'
+                style={{
+                  width: `${bannerWidth}px`,
+                  height: `${bannerHeight}px`,
+                  minWidth: `${bannerWidth}px`,
+                  minHeight: `${bannerHeight}px`,
+                }}
+              >
+                <div dangerouslySetInnerHTML={{ __html: bannerHtml }} />
+              </div>
             </div>
           </motion.div>
         )}
