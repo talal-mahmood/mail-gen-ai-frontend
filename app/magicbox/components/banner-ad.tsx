@@ -196,21 +196,65 @@ export default function BannerAdTab() {
     }
   };
 
-  const copyHtmlCode = () => {
-    navigator.clipboard
-      .writeText(bannerHtml)
-      .then(() => {
-        setCopySuccess('HTML');
-        setTimeout(() => setCopySuccess(null), 2000);
-        showNotification('success', 'HTML copied to clipboard!');
-      })
-      .catch((err) => {
-        console.error('Failed to copy: ', err);
-        showNotification(
-          'error',
-          'Failed to copy HTML code. Please try again.'
-        );
-      });
+  const copyHtmlCode = async () => {
+    try {
+      // Create a temporary textarea element as fallback
+      const textarea = document.createElement('textarea');
+      textarea.value = bannerHtml;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      // Try modern Clipboard API first
+      if (
+        navigator.clipboard &&
+        typeof navigator.clipboard.writeText === 'function'
+      ) {
+        try {
+          await navigator.clipboard.writeText(bannerHtml);
+          showSuccess();
+          return;
+        } catch (clipboardError) {
+          console.log('Clipboard API failed, falling back', clipboardError);
+          // Continue to fallback method
+        }
+      }
+
+      // Fallback for older browsers
+      const successful = document.execCommand('copy');
+      if (successful) {
+        showSuccess();
+      } else {
+        throw new Error('Copy command failed');
+      }
+    } catch (err) {
+      console.error('Copy failed:', err);
+      showNotification(
+        'error',
+        'Copy failed. Please: 1) Use Chrome/Firefox 2) Ensure HTTPS 3) Try manually copying from the code view'
+      );
+
+      // Provide manual copy option as last resort
+      showManualCopyOption();
+    } finally {
+      // Clean up
+      const textarea = document.querySelector('textarea[style*="opacity: 0"]');
+      if (textarea) {
+        document.body.removeChild(textarea);
+      }
+    }
+  };
+
+  const showSuccess = () => {
+    setCopySuccess('HTML');
+    setTimeout(() => setCopySuccess(null), 2000);
+    showNotification('success', 'Copied to clipboard!');
+  };
+
+  const showManualCopyOption = () => {
+    // You could implement a modal showing the code with a selectable textarea
+    // Or use your existing notification system to guide the user
   };
 
   const openPreviewInNewTab = () => {

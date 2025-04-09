@@ -295,21 +295,64 @@ export default function EmailCreator() {
     setUrlError('');
   };
 
-  const copyHtmlCode = () => {
-    navigator.clipboard
-      .writeText(currentHtml)
-      .then(() => {
-        setCopySuccess('HTML');
-        setTimeout(() => setCopySuccess(null), 2000);
-        showNotification('success', 'HTML copied to clipboard!');
-      })
-      .catch((err) => {
-        console.error('Failed to copy: ', err);
-        showNotification(
-          'error',
-          'Failed to copy HTML code. Please try again.'
-        );
-      });
+  const copyHtmlCode = async () => {
+    try {
+      // Modern Clipboard API (primary method)
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(currentHtml);
+        handleCopySuccess();
+        return;
+      }
+
+      // Fallback method for older browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = currentHtml;
+      textarea.style.position = 'fixed'; // Prevent scrolling
+      textarea.style.top = '0';
+      textarea.style.left = '0';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      try {
+        // Legacy execCommand method
+        const success = document.execCommand('copy');
+        if (!success) throw new Error('execCommand failed');
+        handleCopySuccess();
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    } catch (err) {
+      console.error('Copy failed:', err);
+      handleCopyFailure();
+    }
+  };
+
+  // Success handler (same as your original)
+  const handleCopySuccess = () => {
+    setCopySuccess('HTML');
+    setTimeout(() => setCopySuccess(null), 2000);
+    showNotification('success', 'HTML copied to clipboard!');
+  };
+
+  // Enhanced error handler
+  const handleCopyFailure = () => {
+    showNotification(
+      'error',
+      `Failed to copy. ${
+        isSecureContext()
+          ? 'Try manually copying.'
+          : 'Ensure you&apos;re on HTTPS.'
+      }`
+    );
+
+    // Optional: Provide manual copy option
+    // You could show a modal with the HTML content here
+  };
+
+  // Helper to check secure context
+  const isSecureContext = () => {
+    return window.isSecureContext || location.protocol === 'https:';
   };
 
   const copyPlainText = () => {

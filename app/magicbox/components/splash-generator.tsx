@@ -184,21 +184,59 @@ export default function SplashGenerator() {
     setUrlError('');
   };
 
-  const copyHtmlCode = () => {
-    navigator.clipboard
-      .writeText(currentHtml)
-      .then(() => {
-        setCopySuccess('HTML');
-        setTimeout(() => setCopySuccess(null), 2000);
-        showNotification('success', 'HTML copied to clipboard!');
-      })
-      .catch((err) => {
-        console.error('Failed to copy: ', err);
-        showNotification(
-          'error',
-          'Failed to copy HTML code. Please try again.'
-        );
-      });
+  const copyHtmlCode = async () => {
+    try {
+      // Try modern Clipboard API first
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(currentHtml);
+        handleCopySuccess();
+        return;
+      }
+
+      // Fallback for browsers without Clipboard API support
+      const textarea = document.createElement('textarea');
+      textarea.value = currentHtml;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      try {
+        // Legacy method for older browsers
+        const success = document.execCommand('copy');
+        if (!success) throw new Error('execCommand failed');
+        handleCopySuccess();
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    } catch (err) {
+      console.error('Copy failed:', err);
+      handleCopyError(err as Error);
+    }
+  };
+
+  // Keep your existing success handler
+  const handleCopySuccess = () => {
+    setCopySuccess('HTML');
+    setTimeout(() => setCopySuccess(null), 2000);
+    showNotification('success', 'HTML copied to clipboard!');
+  };
+
+  // Enhanced error handler
+  const handleCopyError = (error: Error) => {
+    let errorMessage = 'Failed to copy HTML code. Please try again.';
+
+    // Provide more specific error messages
+    if (error.message.includes('execCommand')) {
+      errorMessage = 'Your browser requires manual copy (Ctrl+C).';
+    } else if (!window.isSecureContext) {
+      errorMessage = 'Copy requires HTTPS. Please use a secure connection.';
+    }
+
+    showNotification('error', errorMessage);
+
+    // Optional: Show the text in a modal for manual copying
+    // showManualCopyFallback(currentHtml);
   };
 
   const openPreviewInNewTab = () => {

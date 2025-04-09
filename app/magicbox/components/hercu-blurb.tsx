@@ -178,21 +178,69 @@ export default function HercuBlurbTab() {
     setUrlError('');
   };
 
-  const copyHtmlCode = () => {
-    navigator.clipboard
-      .writeText(currentHtml)
-      .then(() => {
-        setCopySuccess('HTML');
-        setTimeout(() => setCopySuccess(null), 2000);
-        showNotification('success', 'HTML copied to clipboard!');
-      })
-      .catch((err) => {
-        console.error('Failed to copy: ', err);
-        showNotification(
-          'error',
-          'Failed to copy HTML code. Please try again.'
-        );
-      });
+  const copyHtmlCode = async () => {
+    try {
+      // Fallback 1: Modern Clipboard API (works in HTTPS contexts)
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+          await navigator.clipboard.writeText(currentHtml);
+          handleCopySuccess();
+          return;
+        } catch (clipboardError) {
+          console.log('Clipboard API failed, trying fallback', clipboardError);
+          // Continue to fallback methods
+        }
+      }
+
+      // Fallback 2: document.execCommand (legacy method)
+      const textarea = createTempTextarea(currentHtml);
+      try {
+        const success = document.execCommand('copy');
+        if (success) {
+          handleCopySuccess();
+        } else {
+          throw new Error('execCommand copy failed');
+        }
+      } finally {
+        removeTempTextarea(textarea);
+      }
+    } catch (err) {
+      console.error('All copy methods failed:', err);
+      handleCopyFailure();
+    }
+  };
+
+  // Helper functions
+  const createTempTextarea = (text: string) => {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    return textarea;
+  };
+
+  const removeTempTextarea = (textarea: HTMLTextAreaElement) => {
+    if (textarea && textarea.parentNode) {
+      textarea.parentNode.removeChild(textarea);
+    }
+  };
+
+  const handleCopySuccess = () => {
+    setCopySuccess('HTML');
+    setTimeout(() => setCopySuccess(null), 2000);
+    showNotification('success', 'Copied to clipboard!');
+  };
+
+  const handleCopyFailure = () => {
+    showNotification(
+      'error',
+      'Copy failed. Please: 1) Use Chrome/Firefox 2) Ensure HTTPS 3) Try manual copy'
+    );
+
+    // Optional: Show the HTML in a modal for manual copying
+    // showManualCopyModal(currentHtml);
   };
 
   const copyPlainText = () => {
