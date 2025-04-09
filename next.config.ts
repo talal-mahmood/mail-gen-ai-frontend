@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
       {
         // Proxies requests to `/v1/chat/splash-generate` to your HTTP backend
         source: '/v1/:path*',
-        destination: 'http://service.byteb.io:8080/v1/:path*',
+        destination: 'http://82.112.242.165:8080/v1/:path*',
       },
     ];
   },
