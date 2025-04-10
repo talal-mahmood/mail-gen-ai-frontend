@@ -17,7 +17,7 @@ export async function callSplashGenerateAPI(requestData: any): Promise<any> {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = (await response.json()) || (await response.text());
       throw new Error(errorData.detail || 'Failed to generate HTML');
     }
 
@@ -42,7 +42,7 @@ export async function getSplashHtml(id: string): Promise<any> {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = (await response.json()) || (await response.text());
       throw new Error(errorData.detail || 'Failed to retrieve splash page');
     }
 
@@ -69,7 +69,7 @@ export async function callEmailGenerateAPI(requestData: any): Promise<any> {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = (await response.json()) || (await response.text());
       throw new Error(errorData.detail || 'Failed to generate email');
     }
 
@@ -96,7 +96,7 @@ export async function callBannerGenerateAPI(requestData: any): Promise<any> {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = (await response.json()) || (await response.text());
       throw new Error(errorData.detail || 'Failed to generate banner');
     }
 
@@ -123,7 +123,7 @@ export async function callBlurbGenerateAPI(requestData: any): Promise<any> {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = (await response.json()) || (await response.text());
       throw new Error(errorData.detail || 'Failed to generate email');
     }
 
@@ -154,7 +154,7 @@ export async function callAutocompleteAPI(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = (await response.json()) || (await response.text());
       throw new Error(
         errorData.detail || 'Failed to get autocomplete suggestions'
       );
