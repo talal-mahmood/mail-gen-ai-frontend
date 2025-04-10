@@ -177,7 +177,7 @@ export default function BannerAdTab() {
 
   const downloadHtmlFile = () => {
     try {
-      setDownloadStates((prev) => ({ ...prev, html: true }));
+      // setDownloadStates((prev) => ({ ...prev, html: true }));
       const blob = new Blob([bannerHtml], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -191,8 +191,8 @@ export default function BannerAdTab() {
     } catch (err) {
       console.error('Error downloading HTML:', err);
       showNotification('error', 'Failed to download HTML file');
-    } finally {
-      setDownloadStates((prev) => ({ ...prev, html: false }));
+      // } finally {
+      //   setDownloadStates((prev) => ({ ...prev, html: false }));
     }
   };
 
@@ -271,7 +271,7 @@ export default function BannerAdTab() {
     if (!bannerContent) return;
 
     try {
-      setDownloadStates((prev) => ({ ...prev, [format]: true }));
+      // setDownloadStates((prev) => ({ ...prev, [format]: true }));
       // Force-load fonts before capture
       await document.fonts.ready;
 
@@ -279,7 +279,7 @@ export default function BannerAdTab() {
         format === 'png'
           ? await toPng(bannerContent, {
               quality: 1,
-              backgroundColor: '#ffffff',
+              backgroundColor: 'transparent',
               pixelRatio: 2,
               cacheBust: true,
               style: {
@@ -303,7 +303,7 @@ export default function BannerAdTab() {
             })
           : await toJpeg(bannerContent, {
               quality: 1,
-              backgroundColor: '#ffffff',
+              backgroundColor: 'transparent',
               pixelRatio: 2,
               cacheBust: true,
               style: {
@@ -334,8 +334,8 @@ export default function BannerAdTab() {
     } catch (err) {
       console.error('Error exporting banner:', err);
       showNotification('error', 'Failed to export banner');
-    } finally {
-      setDownloadStates((prev) => ({ ...prev, [format]: false }));
+      // } finally {
+      // setDownloadStates((prev) => ({ ...prev, [format]: false }));
     }
   };
 
@@ -358,7 +358,7 @@ export default function BannerAdTab() {
       for (let i = 0; i < numFrames; i++) {
         const dataUrl = await toPng(bannerContent, {
           quality: 1,
-          backgroundColor: '#ffffff',
+          backgroundColor: 'transparent',
           pixelRatio: 2,
           cacheBust: true,
           style: {
