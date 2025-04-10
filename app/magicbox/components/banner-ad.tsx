@@ -738,7 +738,7 @@ export default function BannerAdTab() {
             {/* Banner container (use this element for exporting) */}
             <div
               ref={bannerRef}
-              className='m-auto w-full h-full flex items-center justify-center overflow-hidden'
+              className='m-auto w-full h-full overflow-hidden flex items-center justify-center'
             >
               <div
                 id='banner-ad-content-wrapper'
@@ -748,7 +748,8 @@ export default function BannerAdTab() {
                   height: `${bannerHeight}px`,
                   minWidth: `${bannerWidth}px`,
                   minHeight: `${bannerHeight}px`,
-                  // Scale only on mobile (below md breakpoint)
+                  maxWidth: `80dvw`,
+                  maxHeight: `80dvh`,
                 }}
               >
                 <div dangerouslySetInnerHTML={{ __html: bannerHtml }} />
@@ -789,7 +790,7 @@ export default function BannerAdTab() {
                   <X className='h-4 w-4' />
                 </Button>
               </div>
-              <p className='text-gray-300 mb-6'>
+              <p className='text-gray-300 text-base mb-6'>
                 Poof! All your current work will vanish so you can start
                 something brand new. Ready to begin again?
               </p>
