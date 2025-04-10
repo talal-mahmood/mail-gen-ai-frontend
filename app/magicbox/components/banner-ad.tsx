@@ -267,7 +267,7 @@ export default function BannerAdTab() {
 
   // Download PNG or JPEG using html2canvas (static capture)
   const downloadBannerImage = async (format: 'png' | 'jpeg' = 'png') => {
-    const bannerContent = document.getElementById('banner-content-wrapper');
+    const bannerContent = document.getElementById('banner-ad-content-wrapper');
     if (!bannerContent) return;
 
     try {
@@ -341,7 +341,7 @@ export default function BannerAdTab() {
 
   // Helper function: Capture multiple frames from the banner element
   const captureFrames = async (numFrames = 10, delay = 200) => {
-    const bannerContent = document.getElementById('banner-content-wrapper');
+    const bannerContent = document.getElementById('banner-ad-content-wrapper');
     if (!bannerContent) return [];
 
     const frames: string[] = [];
@@ -494,8 +494,8 @@ export default function BannerAdTab() {
                 </Label>
                 <Slider
                   value={[bannerWidth]}
-                  min={300}
-                  max={3000}
+                  min={50}
+                  max={600}
                   step={10}
                   onValueChange={(value) => setBannerWidth(value[0])}
                   className='py-4'
@@ -508,7 +508,7 @@ export default function BannerAdTab() {
                 <Slider
                   value={[bannerHeight]}
                   min={50}
-                  max={2000}
+                  max={600}
                   step={10}
                   onValueChange={(value) => setBannerHeight(value[0])}
                   className='py-4'
@@ -738,15 +738,17 @@ export default function BannerAdTab() {
             {/* Banner container (use this element for exporting) */}
             <div
               ref={bannerRef}
-              className='m-auto w-full rounded-lg overflow-auto max-h-max max-w-max h-[300px] sm:h-[500px]'
+              className='m-auto w-full h-full flex items-center justify-center overflow-hidden'
             >
               <div
-                id='banner-content-wrapper'
+                id='banner-ad-content-wrapper'
+                className='flex items-center justify-center'
                 style={{
                   width: `${bannerWidth}px`,
                   height: `${bannerHeight}px`,
                   minWidth: `${bannerWidth}px`,
                   minHeight: `${bannerHeight}px`,
+                  // Scale only on mobile (below md breakpoint)
                 }}
               >
                 <div dangerouslySetInnerHTML={{ __html: bannerHtml }} />

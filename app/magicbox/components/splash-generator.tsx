@@ -323,20 +323,19 @@ export default function SplashGenerator() {
                   },
                 }}
               >
-                <Label
+                {/* <Label
                   htmlFor='query'
                   className='block mb-2 font-semibold text-blue-300'
                 >
                   Design your digital happy place – go wild!
-                </Label>
+                </Label> */}
                 <TextareaWithGhost
                   id='prompt'
                   value={query}
                   ghostText={hasMinimumInput(query) ? ghostText : ''}
                   onChange={handleQueryChange}
                   onKeyDown={handleKeyDown}
-                  placeholder={`Describe what you want your page to look like…
-Tell us what you want — layout, colors, content, anything! `}
+                  placeholder={`Describe what you want your page to look like…`}
                   rows={3}
                 />
               </motion.div>

@@ -128,7 +128,8 @@ body {
     content: '.';
   }
 }
-#banner-content-wrapper {
+#banner-ad-content-wrapper,
+#blurb-content-wrapper {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;

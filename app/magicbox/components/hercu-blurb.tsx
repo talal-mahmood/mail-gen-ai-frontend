@@ -560,14 +560,24 @@ export default function HercuBlurbTab() {
                 </motion.div>
               </div>
             </div>
-            <div
-              className={`w-full bg-white rounded-lg overflow-auto h-[300px] sm:h-[500px]`}
-            >
-              <iframe
-                srcDoc={currentHtml}
-                className={`w-full h-full m-auto p-1`}
-                title='Preview'
-              />
+            <div className='m-auto w-[257.328px] h-[545px] flex items-center justify-center overflow-hidden'>
+              <div
+                id='blurb-content-wrapper'
+                className='flex items-center justify-center'
+                style={{
+                  width: '257.328px',
+                  height: '450.961px',
+                  minWidth: '257.328px',
+                  minHeight: '450.961px',
+                  // transform: `scale(${Math.min(
+                  //   1,
+                  //   (300 / bannerHeight) * 0.95, // 5% safety margin
+                  //   ((window.innerWidth * 0.8) / bannerWidth) * 0.95
+                  // )})`,
+                }}
+              >
+                <div dangerouslySetInnerHTML={{ __html: currentHtml }} />
+              </div>
             </div>
           </motion.div>
         )}

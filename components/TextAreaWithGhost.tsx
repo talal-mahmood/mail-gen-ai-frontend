@@ -153,7 +153,7 @@ export const TextareaWithGhost: React.FC<TextareaWithGhostProps> = ({
         {...rest}
       />
       <motion.p
-        className='mt-1 text-xs text-gray-400'
+        className='mt-2 ml-2 text-left text-xs text-gray-400'
         initial={{ opacity: 0 }}
         animate={{ opacity: ghostText ? 1 : 0.7 }}
         transition={{ duration: 0.2 }}
