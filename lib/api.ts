@@ -7,7 +7,7 @@ export async function callSplashGenerateAPI(requestData: any): Promise<any> {
 
   try {
     // ${baseUrl} (removed for it to work with vercel)
-    const response = await fetch(`/v1/splash-page/generate`, {
+    const response = await fetch(`${baseUrl} /v1/splash-page/generate`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -34,7 +34,7 @@ export async function getSplashHtml(id: string): Promise<any> {
   }
 
   try {
-    const response = await fetch(`/v1/splash-page/${id}`, {
+    const response = await fetch(`${baseUrl} /v1/splash-page/${id}`, {
       method: 'GET',
       headers: {
         Accept: 'application/json',
@@ -59,7 +59,7 @@ export async function callEmailGenerateAPI(requestData: any): Promise<any> {
   }
 
   try {
-    const response = await fetch(`/v1/email/generate`, {
+    const response = await fetch(`${baseUrl} /v1/email/generate`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -86,7 +86,7 @@ export async function callBannerGenerateAPI(requestData: any): Promise<any> {
   }
 
   try {
-    const response = await fetch(`/v1/banner/generate`, {
+    const response = await fetch(`${baseUrl} /v1/banner/generate`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -113,7 +113,7 @@ export async function callBlurbGenerateAPI(requestData: any): Promise<any> {
   }
 
   try {
-    const response = await fetch(`/v1/powerblurb/generate`, {
+    const response = await fetch(`${baseUrl} /v1/powerblurb/generate`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -144,7 +144,7 @@ export async function callAutocompleteAPI(
   }
 
   try {
-    const response = await fetch(`/v1/autocomplete/generate`, {
+    const response = await fetch(`${baseUrl} /v1/autocomplete/generate`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
