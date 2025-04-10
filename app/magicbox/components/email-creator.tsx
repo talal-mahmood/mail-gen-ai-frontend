@@ -760,7 +760,7 @@ export default function EmailCreator() {
                                 )}
 
                                 <div className='mt-3 flex items-center justify-center'>
-                                  <p className='text-xs text-gray-400'>
+                                  <p className='text-xs text-gray-400 [text-shadow:none]'>
                                     Images provided by{' '}
                                     <a
                                       href='https://www.pexels.com'
@@ -809,10 +809,10 @@ export default function EmailCreator() {
                                     className='w-full h-full object-cover'
                                   />
                                   <div className='absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2'>
-                                    <p className='text-xs text-white truncate'>
+                                    <p className='text-xs text-white truncate[text-shadow:none]'>
                                       {image.alt || 'Image'}
                                     </p>
-                                    <p className='text-xs text-gray-300'>
+                                    <p className='text-xs text-gray-300[text-shadow:none]'>
                                       By {image.photographer}
                                     </p>
                                   </div>
@@ -869,7 +869,9 @@ export default function EmailCreator() {
                   required
                 />
                 {urlError && (
-                  <p className='mt-1 text-xs text-red-500'>{urlError}</p>
+                  <p className='mt-1 text-xs text-red-500 [text-shadow:none]'>
+                    {urlError}
+                  </p>
                 )}
               </div>
             </div>
@@ -898,7 +900,7 @@ export default function EmailCreator() {
             transition={{ duration: 0.3 }}
           >
             <div className='w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4'></div>
-            <p className='text-xl text-blue-300'>
+            <p className='text-xl text-blue-300 [text-shadow:none]'>
               {showPreview ? 'Updating' : 'Generating'} your email
               <span className='animate-pulse'>.</span>
               <span
@@ -1083,7 +1085,7 @@ export default function EmailCreator() {
                   <X className='h-4 w-4' />
                 </Button>
               </div>
-              <p className='text-gray-300 mb-6'>
+              <p className='text-gray-300 text-base mb-6 [text-shadow:none]'>
                 Poof! All your current work will vanish so you can start
                 something brand new. Ready to begin again?
               </p>

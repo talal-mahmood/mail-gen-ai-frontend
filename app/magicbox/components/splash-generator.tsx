@@ -378,7 +378,9 @@ export default function SplashGenerator() {
                   required
                 />
                 {urlError && (
-                  <p className='mt-1 text-xs text-red-500'>{urlError}</p>
+                  <p className='mt-1 text-xs text-red-500 [text-shadow:none]'>
+                    {urlError}
+                  </p>
                 )}
               </div>
             </div>
@@ -407,7 +409,7 @@ export default function SplashGenerator() {
             transition={{ duration: 0.3 }}
           >
             <div className='w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4'></div>
-            <p className='text-xl text-blue-300'>
+            <p className='text-xl text-blue-300 [text-shadow:none]'>
               {showPreview ? 'Updating' : 'Generating'} your splash page
               <span className='animate-pulse'>.</span>
               <span
@@ -573,7 +575,7 @@ export default function SplashGenerator() {
                   <X className='h-4 w-4' />
                 </Button>
               </div>
-              <p className='text-gray-300 mb-6'>
+              <p className='text-gray-300 text-base mb-6 [text-shadow:none]'>
                 Poof! All your current work will vanish so you can start
                 something brand new. Ready to begin again?
               </p>

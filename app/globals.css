@@ -58,6 +58,11 @@
   }
 }
 
+/* p {
+  color: white !important;
+  text-shadow: none !important;
+  font-size: 1rem !important;
+} */
 body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
