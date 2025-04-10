@@ -1075,6 +1075,7 @@ export default function EmailCreator() {
                       setUrl('');
                       setUpdatePrompt('');
                       setCurrentHtml('');
+                      setSelectedImages([]);
                       setShowPreview(false);
                       setShowConfirmation(false);
                       showNotification(
