@@ -43,6 +43,8 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 
+const pexelsKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
+
 export default function EmailCreator() {
   const [prompt, setPrompt] = useState('');
   const [url, setUrl] = useState('');
@@ -111,6 +113,15 @@ export default function EmailCreator() {
       }
     }
   };
+
+  useEffect(() => {
+    if (pexelsKey) {
+      setPexelsApiKey(pexelsKey);
+      console.log('pexelsKey is: ', pexelsKey);
+    } else {
+      console.log('pexelsKey not found');
+    }
+  }, []); // Added styleType as dependency
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -254,7 +265,7 @@ export default function EmailCreator() {
       operation: isUpdate ? 'refine' : 'generate',
       previous_email: isUpdate ? currentHtml : '',
       email_style: styleType,
-      selected_images: selectedImagesData,
+      image_urls: selectedImagesData,
     };
 
     try {
@@ -518,7 +529,7 @@ export default function EmailCreator() {
                     </CollapsibleTrigger>
                     <CollapsibleContent className='p-4 bg-gray-800 space-y-6'>
                       {/* API Key Section */}
-                      <div className='bg-gray-900/50 p-4 rounded-lg'>
+                      {/* <div className='bg-gray-900/50 p-4 rounded-lg'>
                         <Label className='block mb-2 font-semibold text-blue-300'>
                           Pexels API Key
                         </Label>
@@ -544,7 +555,7 @@ export default function EmailCreator() {
                             Get API Key
                           </Button>
                         </div>
-                      </div>
+                      </div> */}
 
                       {/* Search Section */}
                       <div className='bg-gray-900/50 p-4 rounded-lg'>
