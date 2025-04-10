@@ -55,9 +55,7 @@ export default function EmailCreator() {
   const [urlError, setUrlError] = useState('');
   const [activeInput, setActiveInput] = useState<'text' | 'url'>('text');
   const [updatePrompt, setUpdatePrompt] = useState('');
-  const [styleType, setStyleType] = useState<'casual' | 'professional'>(
-    'casual'
-  );
+  const [styleType, setStyleType] = useState<string>('casual');
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
 
   // Pexels API integration
