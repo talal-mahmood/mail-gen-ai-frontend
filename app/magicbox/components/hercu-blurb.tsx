@@ -137,7 +137,7 @@ export default function HercuBlurbTab() {
 
     const requestData = {
       prompt: finalPrompt,
-      website_url: processedUrl,
+      website_url: isUpdate ? '' : processedUrl,
       operation: isUpdate ? 'update' : 'start_over',
       previous_blurb: isUpdate ? currentHtml : '',
     };

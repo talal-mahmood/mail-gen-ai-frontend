@@ -145,6 +145,7 @@ export default function SplashGenerator() {
     if (operation === 'update') {
       requestData.previous_html = currentHtml;
       requestData.id = id;
+      requestData.button_url = '';
     }
 
     try {

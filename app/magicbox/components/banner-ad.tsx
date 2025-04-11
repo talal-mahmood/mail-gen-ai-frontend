@@ -140,7 +140,7 @@ export default function BannerAdTab() {
         width: bannerWidth,
         height: bannerHeight,
         operation: operation,
-        website_url: processedUrl,
+        website_url: operation === 'update' ? '' : processedUrl,
         previous_banner: operation === 'update' ? bannerHtml : '',
       };
 
