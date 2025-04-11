@@ -106,7 +106,7 @@ export const TextareaWithGhost: React.FC<TextareaWithGhostProps> = ({
         value={`${value}${ghostText}`}
         readOnly
         tabIndex={-1}
-        className={`absolute top-0 left-0 w-full p-4 pr-[12px] bg-gray-800 border border-gray-600 text-gray-500 pointer-events-none overflow-hidden transition-all duration-200`}
+        className={`absolute top-0 left-0 w-full p-4 pr-[12px] bg-gray-800 rounded-lg border border-gray-600 text-gray-500 pointer-events-none overflow-hidden transition-all duration-200`}
         rows={rows}
         style={{
           caretColor: 'transparent',
@@ -140,7 +140,7 @@ export const TextareaWithGhost: React.FC<TextareaWithGhostProps> = ({
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         placeholder={placeholder}
-        className={`relative w-full p-4 pr-[15px] bg-transparent border-none rounded-lg text-white focus:border-blue-500 overflow-hidden transition-all duration-200 ${className} ${
+        className={`relative w-full p-4 pr-[12px] bg-transparent border border-transparent rounded-lg text-white focus:border-blue-500 overflow-hidden transition-all duration-200 ${className} ${
           isFocused ? 'ring-2 ring-blue-500 ring-opacity-50' : ''
         }`}
         rows={rows}

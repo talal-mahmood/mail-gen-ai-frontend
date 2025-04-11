@@ -131,7 +131,7 @@ export default function SplashGenerator() {
     }
 
     const finalPrompt =
-      activeInput === 'url'
+      operation === 'start_over' && activeInput === 'url'
         ? `Create a splash page based on the content from this URL: ${processedUrl}`
         : query;
 
@@ -533,7 +533,7 @@ export default function SplashGenerator() {
                 </motion.div>
               </div>
             </div>
-            <div className='w-full h-[300px] sm:h-[500px] bg-white rounded-lg'>
+            <div className='w-full h-[300px] sm:h-[500px] bg-white rounded-lg overflow-auto'>
               <iframe
                 srcDoc={currentHtml}
                 className='w-full h-full'
