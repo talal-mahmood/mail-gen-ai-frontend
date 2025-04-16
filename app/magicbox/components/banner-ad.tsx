@@ -497,29 +497,81 @@ export default function BannerAdTab() {
                 </p>
               )}
             </div>
+
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
               <div className='mb-6'>
-                <Label className='block mb-2 font-semibold text-blue-300'>
-                  Banner Width: {bannerWidth}px
-                </Label>
+                <div className='flex justify-between items-center mb-2'>
+                  <Label className='font-semibold text-blue-300'>
+                    Banner Width
+                  </Label>
+                  <div className='flex items-center gap-2 px-2'>
+                    <input
+                      type='number'
+                      min={10}
+                      max={800}
+                      value={bannerWidth}
+                      onChange={(e) => {
+                        const value = Math.min(
+                          800,
+                          Math.max(10, Number(e.target.value))
+                        );
+                        setBannerWidth(value);
+                      }}
+                      className='w-12 bg-transparent px-1 text-right text-blue-300 font-medium
+            focus:outline-none focus:ring-0 border-none [appearance:textfield]
+            hover:bg-gray-800 rounded transition-colors'
+                      style={{
+                        WebkitAppearance: 'textfield',
+                        MozAppearance: 'textfield',
+                      }}
+                    />
+                    <span className='text-gray-400 text-sm'>px</span>
+                  </div>
+                </div>
                 <Slider
                   value={[bannerWidth]}
-                  min={50}
-                  max={600}
-                  step={10}
+                  min={10}
+                  max={800}
+                  step={1}
                   onValueChange={(value) => setBannerWidth(value[0])}
                   className='py-4'
                 />
               </div>
+
               <div className='mb-6'>
-                <Label className='block mb-2 font-semibold text-blue-300'>
-                  Banner Height: {bannerHeight}px
-                </Label>
+                <div className='flex justify-between items-center mb-2'>
+                  <Label className='font-semibold text-blue-300'>
+                    Banner Height
+                  </Label>
+                  <div className='flex items-center gap-2 px-2'>
+                    <input
+                      type='number'
+                      min={10}
+                      max={800}
+                      value={bannerHeight}
+                      onChange={(e) => {
+                        const value = Math.min(
+                          800,
+                          Math.max(10, Number(e.target.value))
+                        );
+                        setBannerHeight(value);
+                      }}
+                      className='w-12 bg-transparent px-1 text-right text-blue-300 font-medium
+            focus:outline-none focus:ring-0 border-none [appearance:textfield]
+            hover:bg-gray-800 rounded transition-colors'
+                      style={{
+                        WebkitAppearance: 'textfield',
+                        MozAppearance: 'textfield',
+                      }}
+                    />
+                    <span className='text-gray-400 text-sm'>px</span>
+                  </div>
+                </div>
                 <Slider
                   value={[bannerHeight]}
-                  min={50}
-                  max={600}
-                  step={10}
+                  min={10}
+                  max={800}
+                  step={1}
                   onValueChange={(value) => setBannerHeight(value[0])}
                   className='py-4'
                 />
