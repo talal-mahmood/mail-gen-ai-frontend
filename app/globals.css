@@ -141,3 +141,9 @@ body {
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
 }
+
+/* Add this to your global CSS*/
+
+.raw-html-container * {
+  all: revert;
+}

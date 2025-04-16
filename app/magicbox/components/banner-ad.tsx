@@ -134,6 +134,13 @@ export default function BannerAdTab() {
       processedPrompt = `Generate a banner for this url: ${processedUrl}`;
     }
 
+    const addCrossOrigin = (htmlString: string) => {
+      return htmlString.replace(
+        /(<link\s+rel="stylesheet"\s+href="https:\/\/fonts\.googleapis\.com\/[^"]+")/g,
+        '$1 crossorigin="anonymous"'
+      );
+    };
+
     try {
       const requestData = {
         user_prompt: operation === 'update' ? updatePrompt : prompt,
@@ -145,7 +152,8 @@ export default function BannerAdTab() {
       };
 
       const response = await callBannerGenerateAPI(requestData);
-      setBannerHtml(response.html);
+      const modifiedHtml = addCrossOrigin(response.html);
+      setBannerHtml(modifiedHtml);
       setShowPreview(true);
       showNotification(
         'success',
@@ -484,7 +492,9 @@ export default function BannerAdTab() {
                 required
               />
               {urlError && (
-                <p className='mt-1 text-xs text-red-500'>{urlError}</p>
+                <p className='mt-1 text-xs text-red-500 [text-shadow:none]'>
+                  {urlError}
+                </p>
               )}
             </div>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-6'>
@@ -539,7 +549,7 @@ export default function BannerAdTab() {
             transition={{ duration: 0.3 }}
           >
             <div className='w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4'></div>
-            <p className='text-xl text-blue-300'>
+            <p className='text-xl text-blue-300 [text-shadow:none]'>
               Generating your banner
               <span className='animate-pulse'>.</span>
               <span
@@ -790,7 +800,7 @@ export default function BannerAdTab() {
                   <X className='h-4 w-4' />
                 </Button>
               </div>
-              <p className='text-gray-300 text-base mb-6'>
+              <p className='text-gray-300 text-base mb-6 [text-shadow:none]'>
                 Poof! All your current work will vanish so you can start
                 something brand new. Ready to begin again?
               </p>

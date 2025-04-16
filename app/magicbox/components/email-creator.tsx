@@ -117,7 +117,8 @@ export default function EmailCreator() {
   useEffect(() => {
     if (pexelsKey) {
       setPexelsApiKey(pexelsKey);
-      console.log('pexelsKey is: ', pexelsKey);
+      // console.log('pexelsKey is: ', pexelsKey);
+      console.log('pexelsKey was found');
     } else {
       console.log('pexelsKey not found');
     }
@@ -662,7 +663,7 @@ export default function EmailCreator() {
                                           className='w-full h-full object-cover'
                                         />
                                         <div className='absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 hover:opacity-100 transition-opacity flex flex-col justify-end p-2'>
-                                          <p className='text-xs text-white truncate'>
+                                          <p className='text-xs text-white truncate [text-shadow:none]'>
                                             {image.alt || 'Image'}
                                           </p>
                                           <p className='text-xs text-gray-300'>
