@@ -13,7 +13,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Wand2, RefreshCw, Copy, ExternalLink, X } from 'lucide-react';
+import {
+  Wand2,
+  RefreshCw,
+  Copy,
+  ExternalLink,
+  X,
+  Download,
+} from 'lucide-react';
 import { callAutocompleteAPI, callSplashGenerateAPI } from '@/lib/api';
 import { TextareaWithGhost } from '@/components/TextAreaWithGhost';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -185,6 +192,18 @@ export default function SplashGenerator() {
     setUrlError('');
   };
 
+  const downloadHtmlFile = () => {
+    const blob = new Blob([currentHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = id ? `splash-${id}.html` : 'splash-page.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const copyHtmlCode = async () => {
     try {
       // Try modern Clipboard API first
@@ -336,7 +355,7 @@ export default function SplashGenerator() {
                   ghostText={hasMinimumInput(query) ? ghostText : ''}
                   onChange={handleQueryChange}
                   onKeyDown={handleKeyDown}
-                  placeholder={`Describe what you want your page to look like…`}
+                  placeholder={`Design your digital happy place – include colors, emoji’s layout, etc. … go wild!`}
                   rows={3}
                 />
               </motion.div>
@@ -519,6 +538,17 @@ export default function SplashGenerator() {
                         Copied!
                       </motion.span>
                     )}
+                  </Button>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    onClick={downloadHtmlFile}
+                    className='bg-green-600 hover:bg-green-700 transition-all duration-200'
+                  >
+                    <Download className='mr-2 h-4 w-4' /> HTML File
                   </Button>
                 </motion.div>
                 <motion.div

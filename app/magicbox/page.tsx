@@ -52,21 +52,21 @@ export default function MagicBox() {
                 className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300 text-xs sm:text-sm py-2'
               >
                 <Sparkles className='mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4' />
-                <span className='hidden xs:inline'>Splash</span> Page
+                <span className='hidden xs:inline mr-1'>Splash</span> Page
               </TabsTrigger>
               <TabsTrigger
                 value='email'
                 className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300 text-xs sm:text-sm py-2'
               >
                 <Mail className='mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4' />
-                Email <span className='hidden xs:inline'>Creator</span>
+                Email <span className='hidden xs:inline ml-1'>Creator</span>
               </TabsTrigger>
               <TabsTrigger
                 value='banner'
                 className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300 text-xs sm:text-sm py-2'
               >
                 <ImageIcon className='mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4' />
-                <span className='hidden xs:inline'>Blurb/</span>Banner
+                <span className='hidden xs:inline mr-1'>Blurb /</span>Banner
               </TabsTrigger>
             </TabsList>
           </motion.div>
