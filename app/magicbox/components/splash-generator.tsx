@@ -20,11 +20,31 @@ import {
   ExternalLink,
   X,
   Download,
+  ImageIcon,
+  Search,
+  ChevronDown,
+  ChevronUp,
+  Check,
 } from 'lucide-react';
 import { callAutocompleteAPI, callSplashGenerateAPI } from '@/lib/api';
 import { TextareaWithGhost } from '@/components/TextAreaWithGhost';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Notification, useNotification } from '@/components/ui/notification';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@radix-ui/react-collapsible';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+
+const pexelsKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
 
 export default function SplashGenerator() {
   const [id, setId] = useState('');
@@ -38,6 +58,15 @@ export default function SplashGenerator() {
   const [urlError, setUrlError] = useState('');
   const [activeInput, setActiveInput] = useState<'text' | 'url'>('text');
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
+  const [pexelsApiKey, setPexelsApiKey] = useState('');
+  const [showPexelsSection, setShowPexelsSection] = useState(false);
+  const [imageSearchQuery, setImageSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedImage, setSelectedImage] = useState<any>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const imagesPerPage = 12;
 
   // Notification system
   const { notification, showNotification, hideNotification } =
@@ -85,6 +114,16 @@ export default function SplashGenerator() {
   };
 
   useEffect(() => {
+    if (pexelsKey) {
+      setPexelsApiKey(pexelsKey);
+      // console.log('pexelsKey is: ', pexelsKey);
+      console.log('pexelsKey was found');
+    } else {
+      console.log('pexelsKey not found');
+    }
+  }, []);
+
+  useEffect(() => {
     const debounceTimer = setTimeout(() => {
       fetchAutocomplete(query);
     }, 500);
@@ -114,6 +153,51 @@ export default function SplashGenerator() {
     }
   };
 
+  const searchPexelsImages = async (page = 1) => {
+    if (!pexelsApiKey || !imageSearchQuery.trim()) {
+      showNotification('error', 'Please enter a search term');
+      return;
+    }
+
+    setIsSearching(true);
+    setCurrentPage(page);
+
+    try {
+      const response = await fetch(
+        `https://api.pexels.com/v1/search?query=${encodeURIComponent(
+          imageSearchQuery
+        )}&per_page=${imagesPerPage}&page=${page}`,
+        {
+          headers: {
+            Authorization: pexelsApiKey,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to fetch images');
+
+      const data = await response.json();
+      setSearchResults(data.photos || []);
+      setTotalPages(Math.ceil(data.total_results / imagesPerPage) || 1);
+
+      if (data.photos.length === 0) {
+        showNotification('info', 'No images found for your search term');
+      }
+    } catch (error: any) {
+      showNotification('error', error.message || 'Error searching for images');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleImageSelection = (image: any) => {
+    if (selectedImage?.id === image.id) {
+      setSelectedImage(null);
+    } else {
+      setSelectedImage(image);
+    }
+  };
+
   const generateSplashPage = async (operation: 'start_over' | 'update') => {
     let processedUrl = buttonUrl.trim();
 
@@ -137,16 +221,40 @@ export default function SplashGenerator() {
       processedUrl = `https://${processedUrl}`;
     }
 
+    const initialPrompt = `🎨 Create a visually appealing splash page based on the content from this URL: ${processedUrl}.
+
+Make it exciting, even if the content is minimal. Use clean and modern font styles, adjust font colors for better readability, and enhance key sections with emojis, underlining, or color accents.
+
+Start with a fun headline, a short summary if possible, and include engaging elements like:
+- 🌐 The website title or domain
+- 📄 A catchy tagline or intro
+- 💡 Any standout text or features from the page
+- 🎯 Highlight important keywords
+- ✨ Use vibrant styles to avoid a generic look
+
+Let's make it pop!`;
+
     const finalPrompt =
       operation === 'start_over' && activeInput === 'url'
-        ? `Create a splash page based on the content from this URL: ${processedUrl}`
+        ? initialPrompt
         : query;
+
+    // Prepare selected images data for the API
+    const selectedImagesData = {
+      // id: img.id,
+      url: selectedImage ? selectedImage.src.medium : '',
+      alt: selectedImage ? selectedImage.alt : '',
+      // photographer: img.photographer,
+      // photographer_url: img.photographer_url,
+    };
 
     const requestData: any = {
       query: finalPrompt,
       style_type: styleType,
       operation,
       button_url: processedUrl,
+      image_url:
+        activeInput === 'text' && selectedImage ? [selectedImagesData] : [],
     };
 
     if (operation === 'update') {
@@ -358,6 +466,207 @@ export default function SplashGenerator() {
                   placeholder={`Design your digital happy place – include colors, emoji’s layout, etc. … go wild!`}
                   rows={3}
                 />
+                {(styleType === 'casual' || true) && (
+                  <div className='mt-6 space-y-3'>
+                    <Collapsible
+                      open={showPexelsSection}
+                      onOpenChange={setShowPexelsSection}
+                      className='w-full border border-gray-700 rounded-lg overflow-hidden'
+                    >
+                      <CollapsibleTrigger className='flex items-center justify-between w-full p-4 bg-gray-800 hover:bg-gray-700 transition-colors'>
+                        <div className='flex items-center gap-2'>
+                          <div className='bg-blue-500/20 p-2 rounded-full'>
+                            <Search className='h-5 w-5 text-blue-400' />
+                          </div>
+                          <span className='font-medium text-blue-300'>
+                            {selectedImage
+                              ? 'Change Selected Image'
+                              : 'Add Image'}
+                          </span>
+                        </div>
+                        {showPexelsSection ? (
+                          <ChevronUp className='h-4 w-4 text-blue-300' />
+                        ) : (
+                          <ChevronDown className='h-4 w-4 text-blue-300' />
+                        )}
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className='p-4 bg-gray-800 space-y-6'>
+                        <div className='bg-gray-900/50 p-4 rounded-lg'>
+                          <Label className='block mb-2 font-semibold text-blue-300'>
+                            Search Images
+                          </Label>
+                          <div className='flex gap-2'>
+                            <Input
+                              type='text'
+                              value={imageSearchQuery}
+                              onChange={(e) =>
+                                setImageSearchQuery(e.target.value)
+                              }
+                              className='flex-1 p-3 bg-gray-800 border border-gray-600 rounded-lg text-white'
+                              placeholder='Search for images...'
+                              onKeyDown={(e) =>
+                                e.key === 'Enter' && searchPexelsImages(1)
+                              }
+                            />
+                            <Button
+                              onClick={() => searchPexelsImages(1)}
+                              disabled={isSearching}
+                              className='whitespace-nowrap border-none text-white hover:text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-300'
+                            >
+                              {isSearching ? (
+                                <div className='h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
+                              ) : (
+                                <>
+                                  <Search className='h-4 w-4 mr-2' /> Search
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {searchResults.length > 0 && (
+                          <div>
+                            <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto p-3 rounded-lg bg-gray-900/50'>
+                              {searchResults.map((image) => (
+                                <div
+                                  key={image.id}
+                                  onClick={() => handleImageSelection(image)}
+                                  className={`relative cursor-pointer rounded-md overflow-hidden aspect-video transition-all duration-200 transform ${
+                                    selectedImage?.id === image.id
+                                      ? 'ring-2 ring-blue-500 scale-95 opacity-80'
+                                      : 'hover:ring-1 hover:ring-blue-400/50 hover:scale-[0.98]'
+                                  }`}
+                                >
+                                  <img
+                                    src={image.src.medium}
+                                    alt={image.alt}
+                                    className='w-full h-full object-cover'
+                                  />
+                                  {selectedImage?.id === image.id && (
+                                    <div className='absolute inset-0 flex items-center justify-center bg-blue-500/20'>
+                                      <div className='bg-blue-500 rounded-full p-1'>
+                                        <Check className='h-4 w-4 text-white' />
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                              <div className='mt-4 flex justify-center'>
+                                <Pagination>
+                                  <PaginationContent>
+                                    <PaginationItem>
+                                      <PaginationPrevious
+                                        onClick={() =>
+                                          searchPexelsImages(
+                                            Math.max(1, currentPage - 1)
+                                          )
+                                        }
+                                        className={
+                                          currentPage === 1
+                                            ? 'pointer-events-none opacity-50'
+                                            : '' + ' cursor-pointer'
+                                        }
+                                      />
+                                    </PaginationItem>
+
+                                    {Array.from(
+                                      { length: Math.min(5, totalPages) },
+                                      (_, i) => {
+                                        // Show pages around current page
+                                        let pageNum;
+                                        if (totalPages <= 5) {
+                                          pageNum = i + 1;
+                                        } else if (currentPage <= 3) {
+                                          pageNum = i + 1;
+                                        } else if (
+                                          currentPage >=
+                                          totalPages - 2
+                                        ) {
+                                          pageNum = totalPages - 4 + i;
+                                        } else {
+                                          pageNum = currentPage - 2 + i;
+                                        }
+
+                                        return (
+                                          <PaginationItem key={pageNum}>
+                                            <PaginationLink
+                                              onClick={() =>
+                                                searchPexelsImages(pageNum)
+                                              }
+                                              isActive={currentPage === pageNum}
+                                              className={`cursor-pointer bg-gray-900 hover:text-black ${
+                                                currentPage === pageNum &&
+                                                'bg-white text-black'
+                                              }`}
+                                            >
+                                              {pageNum}
+                                            </PaginationLink>
+                                          </PaginationItem>
+                                        );
+                                      }
+                                    )}
+
+                                    <PaginationItem>
+                                      <PaginationNext
+                                        onClick={() =>
+                                          searchPexelsImages(
+                                            Math.min(
+                                              totalPages,
+                                              currentPage + 1
+                                            )
+                                          )
+                                        }
+                                        className={
+                                          currentPage === totalPages
+                                            ? 'pointer-events-none opacity-50'
+                                            : '' + ' cursor-pointer'
+                                        }
+                                      />
+                                    </PaginationItem>
+                                  </PaginationContent>
+                                </Pagination>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {selectedImage && (
+                      <div className='bg-gradient-to-r from-blue-500/20 to-purple-500/20 p-4 rounded-lg border border-blue-500/30'>
+                        <div className='flex items-center justify-between mb-3'>
+                          <div className='flex items-center gap-2'>
+                            <div className='bg-blue-500/20 p-1.5 rounded-full'>
+                              <ImageIcon className='h-4 w-4 text-blue-400' />
+                            </div>
+                            <Label className='font-semibold text-blue-300'>
+                              Selected Image
+                            </Label>
+                          </div>
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            onClick={() => setSelectedImage(null)}
+                            className='text-xs text-red-400 hover:text-red-300 hover:bg-red-500/20'
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                        <div className='relative w-[240px] max-w-full aspect-video rounded-md overflow-hidden'>
+                          <img
+                            src={selectedImage.src.large}
+                            alt={selectedImage.alt}
+                            className='w-full h-full object-cover'
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -468,6 +777,204 @@ export default function SplashGenerator() {
                 placeholder={`Describe what you want your page to look like…`}
                 rows={3}
               />
+              {(styleType === 'casual' || true) && (
+                <div className='mt-6 space-y-3'>
+                  <Collapsible
+                    open={showPexelsSection}
+                    onOpenChange={setShowPexelsSection}
+                    className='w-full border border-gray-700 rounded-lg overflow-hidden'
+                  >
+                    <CollapsibleTrigger className='flex items-center justify-between w-full p-4 bg-gray-800 hover:bg-gray-700 transition-colors'>
+                      <div className='flex items-center gap-2'>
+                        <div className='bg-blue-500/20 p-2 rounded-full'>
+                          <Search className='h-5 w-5 text-blue-400' />
+                        </div>
+                        <span className='font-medium text-blue-300'>
+                          {selectedImage
+                            ? 'Change Selected Image'
+                            : 'Add Image'}
+                        </span>
+                      </div>
+                      {showPexelsSection ? (
+                        <ChevronUp className='h-4 w-4 text-blue-300' />
+                      ) : (
+                        <ChevronDown className='h-4 w-4 text-blue-300' />
+                      )}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className='p-4 bg-gray-800 space-y-6'>
+                      <div className='bg-gray-900/50 p-4 rounded-lg'>
+                        <Label className='block mb-2 font-semibold text-blue-300'>
+                          Search Images
+                        </Label>
+                        <div className='flex gap-2'>
+                          <Input
+                            type='text'
+                            value={imageSearchQuery}
+                            onChange={(e) =>
+                              setImageSearchQuery(e.target.value)
+                            }
+                            className='flex-1 p-3 bg-gray-800 border border-gray-600 rounded-lg text-white'
+                            placeholder='Search for images...'
+                            onKeyDown={(e) =>
+                              e.key === 'Enter' && searchPexelsImages(1)
+                            }
+                          />
+                          <Button
+                            onClick={() => searchPexelsImages(1)}
+                            disabled={isSearching}
+                            className='whitespace-nowrap border-none text-white hover:text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-300'
+                          >
+                            {isSearching ? (
+                              <div className='h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
+                            ) : (
+                              <>
+                                <Search className='h-4 w-4 mr-2' /> Search
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {searchResults.length > 0 && (
+                        <div>
+                          <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto p-3 rounded-lg bg-gray-900/50'>
+                            {searchResults.map((image) => (
+                              <div
+                                key={image.id}
+                                onClick={() => handleImageSelection(image)}
+                                className={`relative cursor-pointer rounded-md overflow-hidden aspect-video transition-all duration-200 transform ${
+                                  selectedImage?.id === image.id
+                                    ? 'ring-2 ring-blue-500 scale-95 opacity-80'
+                                    : 'hover:ring-1 hover:ring-blue-400/50 hover:scale-[0.98]'
+                                }`}
+                              >
+                                <img
+                                  src={image.src.medium}
+                                  alt={image.alt}
+                                  className='w-full h-full object-cover'
+                                />
+                                {selectedImage?.id === image.id && (
+                                  <div className='absolute inset-0 flex items-center justify-center bg-blue-500/20'>
+                                    <div className='bg-blue-500 rounded-full p-1'>
+                                      <Check className='h-4 w-4 text-white' />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Pagination */}
+                          {totalPages > 1 && (
+                            <div className='mt-4 flex justify-center'>
+                              <Pagination>
+                                <PaginationContent>
+                                  <PaginationItem>
+                                    <PaginationPrevious
+                                      onClick={() =>
+                                        searchPexelsImages(
+                                          Math.max(1, currentPage - 1)
+                                        )
+                                      }
+                                      className={
+                                        currentPage === 1
+                                          ? 'pointer-events-none opacity-50'
+                                          : '' + ' cursor-pointer'
+                                      }
+                                    />
+                                  </PaginationItem>
+
+                                  {Array.from(
+                                    { length: Math.min(5, totalPages) },
+                                    (_, i) => {
+                                      // Show pages around current page
+                                      let pageNum;
+                                      if (totalPages <= 5) {
+                                        pageNum = i + 1;
+                                      } else if (currentPage <= 3) {
+                                        pageNum = i + 1;
+                                      } else if (
+                                        currentPage >=
+                                        totalPages - 2
+                                      ) {
+                                        pageNum = totalPages - 4 + i;
+                                      } else {
+                                        pageNum = currentPage - 2 + i;
+                                      }
+
+                                      return (
+                                        <PaginationItem key={pageNum}>
+                                          <PaginationLink
+                                            onClick={() =>
+                                              searchPexelsImages(pageNum)
+                                            }
+                                            isActive={currentPage === pageNum}
+                                            className={`cursor-pointer bg-gray-900 hover:text-black ${
+                                              currentPage === pageNum &&
+                                              'bg-white text-black'
+                                            }`}
+                                          >
+                                            {pageNum}
+                                          </PaginationLink>
+                                        </PaginationItem>
+                                      );
+                                    }
+                                  )}
+
+                                  <PaginationItem>
+                                    <PaginationNext
+                                      onClick={() =>
+                                        searchPexelsImages(
+                                          Math.min(totalPages, currentPage + 1)
+                                        )
+                                      }
+                                      className={
+                                        currentPage === totalPages
+                                          ? 'pointer-events-none opacity-50'
+                                          : '' + ' cursor-pointer'
+                                      }
+                                    />
+                                  </PaginationItem>
+                                </PaginationContent>
+                              </Pagination>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {selectedImage && (
+                    <div className='bg-gradient-to-r from-blue-500/20 to-purple-500/20 p-4 rounded-lg border border-blue-500/30'>
+                      <div className='flex items-center justify-between mb-3'>
+                        <div className='flex items-center gap-2'>
+                          <div className='bg-blue-500/20 p-1.5 rounded-full'>
+                            <ImageIcon className='h-4 w-4 text-blue-400' />
+                          </div>
+                          <Label className='font-semibold text-blue-300'>
+                            Selected Image
+                          </Label>
+                        </div>
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          onClick={() => setSelectedImage(null)}
+                          className='text-xs text-red-400 hover:text-red-300 hover:bg-red-500/20'
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                      <div className='relative w-[240px] max-w-full aspect-video rounded-md overflow-hidden'>
+                        <img
+                          src={selectedImage.src.large}
+                          alt={selectedImage.alt}
+                          className='w-full h-full object-cover'
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className='flex flex-col sm:flex-row gap-4'>
@@ -634,6 +1141,7 @@ export default function SplashGenerator() {
                       setStyleType('casual');
                       setButtonUrl('');
                       setCurrentHtml('');
+                      setSelectedImage([]);
                       setShowPreview(false);
                       setShowConfirmation(false);
                       showNotification(
