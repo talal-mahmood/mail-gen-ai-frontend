@@ -317,7 +317,7 @@ export default function EmailCreator() {
       // Modern Clipboard API (primary method)
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(currentHtml);
-        handleCopySuccess();
+        handleCopySuccess('HTML');
         return;
       }
 
@@ -335,7 +335,7 @@ export default function EmailCreator() {
         // Legacy execCommand method
         const success = document.execCommand('copy');
         if (!success) throw new Error('execCommand failed');
-        handleCopySuccess();
+        handleCopySuccess('HTML');
       } finally {
         document.body.removeChild(textarea);
       }
@@ -345,26 +345,21 @@ export default function EmailCreator() {
     }
   };
 
-  // Success handler (same as your original)
-  const handleCopySuccess = () => {
-    setCopySuccess('HTML');
+  // Updated success handler
+  const handleCopySuccess = (type: string) => {
+    setCopySuccess(type);
     setTimeout(() => setCopySuccess(null), 2000);
-    showNotification('success', 'HTML copied to clipboard!');
+    showNotification('success', `${type} copied to clipboard!`);
   };
 
-  // Enhanced error handler
+  // Updated error handler
   const handleCopyFailure = () => {
     showNotification(
       'error',
       `Failed to copy. ${
-        isSecureContext()
-          ? 'Try manually copying.'
-          : 'Ensure you&apos;re on HTTPS.'
+        isSecureContext() ? 'Try manually copying.' : "Ensure you're on HTTPS."
       }`
     );
-
-    // Optional: Provide manual copy option
-    // You could show a modal with the HTML content here
   };
 
   // Helper to check secure context
@@ -392,18 +387,40 @@ export default function EmailCreator() {
       ? doc.body.innerText
       : doc.documentElement.innerText;
 
-    // Copy the plain text to clipboard
-    navigator.clipboard
-      .writeText(plainText)
-      .then(() => {
-        setCopySuccess('Text');
-        setTimeout(() => setCopySuccess(null), 2000);
-        showNotification('success', 'Plain text copied to clipboard!');
-      })
-      .catch((err) => {
-        console.error('Failed to copy:', err);
-        showNotification('error', 'Failed to copy text. Please try again.');
-      });
+    // Modern Clipboard API (primary method)
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard
+        .writeText(plainText)
+        .then(() => {
+          handleCopySuccess('Text');
+        })
+        .catch((err) => {
+          console.error('Failed to copy:', err);
+          handleCopyFailure();
+        });
+      return;
+    }
+
+    // Fallback method for older browsers
+    const textarea = document.createElement('textarea');
+    textarea.value = plainText;
+    textarea.style.position = 'fixed';
+    textarea.style.top = '0';
+    textarea.style.left = '0';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    try {
+      const success = document.execCommand('copy');
+      if (!success) throw new Error('execCommand failed');
+      handleCopySuccess('Text');
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      handleCopyFailure();
+    } finally {
+      document.body.removeChild(textarea);
+    }
   };
 
   const openPreviewInNewTab = () => {
