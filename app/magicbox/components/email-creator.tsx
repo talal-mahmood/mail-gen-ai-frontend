@@ -6,18 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Wand2,
-  RefreshCw,
-  Copy,
-  ExternalLink,
-  X,
-  ChevronDown,
-  ChevronUp,
-  Search,
-  Check,
-  ImageIcon,
-} from 'lucide-react';
+import { Wand2, RefreshCw, Copy, ExternalLink, X } from 'lucide-react';
 import { callEmailGenerateAPI, callAutocompleteAPI } from '@/lib/api';
 import {
   Select,
@@ -29,22 +18,8 @@ import {
 import { TextareaWithGhost } from '@/components/TextAreaWithGhost';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Notification, useNotification } from '@/components/ui/notification';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import { PexelsImageSelector } from '@/components/PexelsImageSelector';
 
-const pexelsKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
+import { PexelsImageSelector } from '@/components/PexelsImageSelector';
 
 export default function EmailCreator() {
   const [prompt, setPrompt] = useState('');
@@ -60,15 +35,7 @@ export default function EmailCreator() {
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
 
   // Pexels API integration
-  const [pexelsApiKey, setPexelsApiKey] = useState('');
-  const [showPexelsSection, setShowPexelsSection] = useState(false);
-  const [imageSearchQuery, setImageSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedImages, setSelectedImages] = useState<any[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const imagesPerPage = 12;
 
   // Notification system
   const { notification, showNotification, hideNotification } =
@@ -116,16 +83,6 @@ export default function EmailCreator() {
   };
 
   useEffect(() => {
-    if (pexelsKey) {
-      setPexelsApiKey(pexelsKey);
-      // console.log('pexelsKey is: ', pexelsKey);
-      console.log('pexelsKey was found');
-    } else {
-      console.log('pexelsKey not found');
-    }
-  }, []);
-
-  useEffect(() => {
     const debounceTimer = setTimeout(() => {
       fetchAutocomplete(prompt);
     }, 500);
@@ -153,67 +110,6 @@ export default function EmailCreator() {
       setPrompt(prompt + ghostText);
       setGhostText('');
     }
-  };
-
-  const searchPexelsImages = async (page = 1) => {
-    if (!pexelsApiKey || !imageSearchQuery.trim()) {
-      showNotification(
-        'error',
-        'Please enter both an API key and a search term'
-      );
-      return;
-    }
-
-    setIsSearching(true);
-    setCurrentPage(page);
-
-    try {
-      const response = await fetch(
-        `https://api.pexels.com/v1/search?query=${encodeURIComponent(
-          imageSearchQuery
-        )}&per_page=${imagesPerPage}&page=${page}`,
-        {
-          headers: {
-            Authorization: pexelsApiKey,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch images. Please check your API key.');
-      }
-
-      const data = await response.json();
-      setSearchResults(data.photos || []);
-      setTotalPages(Math.ceil(data.total_results / imagesPerPage) || 1);
-
-      if (data.photos.length === 0) {
-        showNotification('info', 'No images found for your search term');
-      }
-    } catch (error: any) {
-      console.error('Pexels API error:', error);
-      showNotification('error', error.message || 'Error searching for images');
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const toggleImageSelection = (image: any) => {
-    if (selectedImages.some((img) => img.id === image.id)) {
-      // Remove image if already selected
-      setSelectedImages(selectedImages.filter((img) => img.id !== image.id));
-    } else {
-      // Add image if not already selected (max 3)
-      if (selectedImages.length < 3) {
-        setSelectedImages([...selectedImages, image]);
-      } else {
-        showNotification('warning', 'You can only select up to 3 images');
-      }
-    }
-  };
-
-  const isImageSelected = (imageId: number) => {
-    return selectedImages.some((img) => img.id === imageId);
   };
 
   const generateEmail = async (operation: 'start_over' | 'update') => {

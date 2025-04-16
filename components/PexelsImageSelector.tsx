@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import {
   Search,
   ChevronDown,
-  ChevronUp,
+  // ChevronUp,
   ImageIcon,
   X,
   Check,
