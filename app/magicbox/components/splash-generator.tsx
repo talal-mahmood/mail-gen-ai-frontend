@@ -171,8 +171,7 @@ Let's make it pop!`;
       style_type: styleType,
       operation,
       button_url: processedUrl,
-      image_url:
-        activeInput === 'text' && selectedImage ? [selectedImagesData] : [],
+      image_url: activeInput === selectedImage ? [selectedImagesData] : [],
     };
 
     if (operation === 'update') {
@@ -551,7 +550,7 @@ Let's make it pop!`;
         {showPreview && (
           <motion.div
             ref={previewRef}
-            className='glassmorphism p-4 sm:p-6 rounded-xl'
+            className='glassmorphism p-4 sm:p-6 rounded-xl min-h-max'
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
@@ -677,7 +676,7 @@ Let's make it pop!`;
                       setStyleType('casual');
                       setButtonUrl('');
                       setCurrentHtml('');
-                      setSelectedImage([]);
+                      setSelectedImage(null);
                       setShowPreview(false);
                       setShowConfirmation(false);
                       showNotification(

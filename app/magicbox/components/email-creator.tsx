@@ -151,8 +151,8 @@ export default function EmailCreator() {
     // Prepare selected images data for the API
     const selectedImagesData = selectedImages.map((img) => ({
       // id: img.id,
-      url: img.src.medium,
-      alt: img.alt,
+      url: img.src.medium || '',
+      alt: img.alt || '',
       // photographer: img.photographer,
       // photographer_url: img.photographer_url,
     }));
