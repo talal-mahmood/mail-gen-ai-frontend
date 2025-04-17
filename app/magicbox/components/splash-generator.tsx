@@ -165,13 +165,14 @@ Let's make it pop!`;
       // photographer: img.photographer,
       // photographer_url: img.photographer_url,
     };
+    console.log('selectedImagesData: ', selectedImagesData);
 
     const requestData: any = {
       query: finalPrompt,
       style_type: styleType,
       operation,
       button_url: processedUrl,
-      image_url: activeInput === selectedImage ? [selectedImagesData] : [],
+      image_url: selectedImage ? [selectedImagesData] : [],
     };
 
     if (operation === 'update') {
