@@ -318,7 +318,7 @@ export default function BannerAdTab() {
 
         // If needed, find other elements with border-radius
         const elements = bannerContent.querySelectorAll('*');
-        elements.forEach((el) => {
+        elements.forEach((el: Element) => {
           if (
             el instanceof HTMLElement &&
             el !== bannerContainer &&
@@ -329,7 +329,7 @@ export default function BannerAdTab() {
 
             if (borderRadius && borderRadius !== '0px') {
               originalStyles.push({
-                element: el,
+                element: el as HTMLElement,
                 borderRadius: el.style.borderRadius || borderRadius,
               });
               el.style.borderRadius = '0px';
@@ -405,78 +405,118 @@ export default function BannerAdTab() {
 
     const frames: string[] = [];
 
-    // Find all elements that might have border-radius
-    const bannerElement = bannerContent.querySelector('.banner') as HTMLElement;
-    const bannerContainer = bannerContent.querySelector(
-      '.banner-container'
-    ) as HTMLElement;
+    try {
+      // Get the actual inserted HTML content (important!)
+      const bannerIframe = bannerContent.querySelector('iframe');
+      let targetDocument = document;
+      let targetRoot = bannerContent;
 
-    // Save original styles
-    const originalStyles: { element: HTMLElement; borderRadius: string }[] = [];
+      // Handle if banner is in an iframe
+      if (bannerIframe && bannerIframe.contentDocument) {
+        targetDocument = bannerIframe.contentDocument;
+        targetRoot = targetDocument.body;
+      }
 
-    // Function to collect elements and their original styles
-    const collectElementsWithBorderRadius = (parentElement: HTMLElement) => {
-      // Get all elements within the parent
-      const elements = parentElement.querySelectorAll('*');
+      // Find all elements with border-radius
+      const elementsWithRadius: {
+        element: HTMLElement;
+        originalRadius: string;
+      }[] = [];
+      const scanForBorderRadius = (element: Element | null) => {
+        if (!element || !element.querySelectorAll) return;
 
-      // Check each element for border-radius
-      elements.forEach((el) => {
-        if (el instanceof HTMLElement) {
-          const computedStyle = getComputedStyle(el);
-          const borderRadius = computedStyle.borderRadius;
+        // Check the element itself
+        if (element instanceof HTMLElement) {
+          const style = getComputedStyle(element);
+          if (style.borderRadius && style.borderRadius !== '0px') {
+            // Skip elements with 'cta' in their class name
+            const classList = element.classList;
+            let hasCtaClass = false;
+            for (let i = 0; i < classList.length; i++) {
+              if (classList[i].toLowerCase().includes('cta')) {
+                hasCtaClass = true;
+                break;
+              }
+            }
 
-          // If element has border-radius, save it
-          if (borderRadius && borderRadius !== '0px') {
-            originalStyles.push({
-              element: el,
-              borderRadius: el.style.borderRadius || borderRadius,
-            });
-
-            // Set border-radius to 0
-            el.style.borderRadius = '0px';
+            if (!hasCtaClass) {
+              elementsWithRadius.push({
+                element,
+                originalRadius: style.borderRadius,
+              });
+            }
           }
         }
-      });
-    };
 
-    try {
-      // Handle specific known elements
-      if (bannerElement) {
-        originalStyles.push({
-          element: bannerElement,
-          borderRadius:
-            bannerElement.style.borderRadius ||
-            getComputedStyle(bannerElement).borderRadius,
+        // Check all child elements
+        const children = element.querySelectorAll('*');
+        children.forEach((child: Element) => {
+          if (child instanceof HTMLElement) {
+            const style = getComputedStyle(child);
+            if (style.borderRadius && style.borderRadius !== '0px') {
+              // Skip elements with 'cta' in their class name
+              const classList = child.classList;
+              let hasCtaClass = false;
+              for (let i = 0; i < classList.length; i++) {
+                if (classList[i].toLowerCase().includes('cta')) {
+                  hasCtaClass = true;
+                  break;
+                }
+              }
+
+              if (!hasCtaClass) {
+                elementsWithRadius.push({
+                  element: child as HTMLElement,
+                  originalRadius: style.borderRadius,
+                });
+              }
+            }
+          }
         });
-        bannerElement.style.borderRadius = '0px';
-      }
+      };
 
-      if (bannerContainer) {
-        originalStyles.push({
-          element: bannerContainer,
-          borderRadius:
-            bannerContainer.style.borderRadius ||
-            getComputedStyle(bannerContainer).borderRadius,
-        });
-        bannerContainer.style.borderRadius = '0px';
-      }
+      // Scan the banner content for elements with border-radius
+      scanForBorderRadius(targetRoot);
 
-      // Collect all other elements with border-radius
-      collectElementsWithBorderRadius(bannerContent);
+      console.log(
+        'Found elements with border-radius:',
+        elementsWithRadius.length
+      );
 
-      // Wait for style changes to apply
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      // Apply direct style overrides with !important to all elements with border-radius
+      const applyZeroBorderRadius = () => {
+        elementsWithRadius.forEach((item) => {
+          // Force style with higher specificity
+          item.element.setAttribute(
+            'style',
+            `${
+              item.element.getAttribute('style') || ''
+            }; border-radius: 0px !important;`
+          );
 
-      for (let i = 0; i < numFrames; i++) {
-        // Re-apply zero border-radius to all elements before each frame capture
-        originalStyles.forEach((item) => {
-          item.element.style.borderRadius = '0px';
-          // Force reflow
+          // Force layout recalculation
           void item.element.offsetHeight;
         });
+      };
 
-        // Extra wait for styles to apply
-        await new Promise((resolve) => requestAnimationFrame(resolve));
+      // Add a style tag to override all border-radius styles (excluding CTA elements)
+      const styleTag = document.createElement('style');
+      styleTag.textContent = `
+        #banner-ad-content-wrapper *:not([class*="cta"]):not([class*="Cta"]):not([class*="CTA"]) {
+          border-radius: 0px !important;
+        }
+      `;
+      document.head.appendChild(styleTag);
+
+      // Longer wait for style changes to propagate
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      // Capture frames
+      for (let i = 0; i < numFrames; i++) {
+        // Re-apply zero border radius before each frame
+        applyZeroBorderRadius();
+
+        await new Promise((resolve) => setTimeout(resolve, 50));
 
         const dataUrl = await toJpeg(bannerContent, {
           quality: 1,
@@ -484,14 +524,21 @@ export default function BannerAdTab() {
           pixelRatio: 2,
           cacheBust: true,
           style: {
+            borderRadius: '0px !important',
             color: '#000000 !important',
             mixBlendMode: 'normal !important',
             opacity: '1 !important',
-            borderRadius: '0px !important', // Force zero border-radius in style
           },
           filter: (node) => {
-            // Remove any hidden elements
             if (node instanceof HTMLElement) {
+              // Don't filter out CTA elements
+              if (
+                Array.from(node.classList).some((className) =>
+                  className.toLowerCase().includes('cta')
+                )
+              ) {
+                return true;
+              }
               return window.getComputedStyle(node).display !== 'none';
             }
             return true;
@@ -501,11 +548,16 @@ export default function BannerAdTab() {
         frames.push(dataUrl);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
-    } finally {
-      // Restore all original styles
-      originalStyles.forEach((item) => {
-        item.element.style.borderRadius = item.borderRadius;
+
+      // Clean up the style tag
+      document.head.removeChild(styleTag);
+
+      // Restore original border radius styles
+      elementsWithRadius.forEach((item) => {
+        item.element.style.borderRadius = item.originalRadius;
       });
+    } catch (err) {
+      console.error('Error capturing frames:', err);
     }
 
     return frames;
