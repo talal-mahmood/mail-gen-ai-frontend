@@ -278,10 +278,68 @@ export default function BannerAdTab() {
     const bannerContent = document.getElementById('banner-ad-content-wrapper');
     if (!bannerContent) return;
 
+    // Find both possible elements
+    const bannerElement = bannerContent.querySelector('.banner') as HTMLElement;
+    const bannerContainer = bannerContent.querySelector(
+      '.banner-container'
+    ) as HTMLElement;
+
+    // Save original styles
+    const originalStyles: { element: HTMLElement; borderRadius: string }[] = [];
+
     try {
       // setDownloadStates((prev) => ({ ...prev, [format]: true }));
       // Force-load fonts before capture
       await document.fonts.ready;
+
+      // Only modify border radius for JPEG format
+      if (format === 'jpeg') {
+        // Handle banner-container if it exists
+        if (bannerContainer) {
+          originalStyles.push({
+            element: bannerContainer,
+            borderRadius:
+              bannerContainer.style.borderRadius ||
+              getComputedStyle(bannerContainer).borderRadius,
+          });
+          bannerContainer.style.borderRadius = '0';
+        }
+
+        // Handle banner if it exists
+        if (bannerElement) {
+          originalStyles.push({
+            element: bannerElement,
+            borderRadius:
+              bannerElement.style.borderRadius ||
+              getComputedStyle(bannerElement).borderRadius,
+          });
+          bannerElement.style.borderRadius = '0';
+        }
+
+        // If needed, find other elements with border-radius
+        const elements = bannerContent.querySelectorAll('*');
+        elements.forEach((el) => {
+          if (
+            el instanceof HTMLElement &&
+            el !== bannerContainer &&
+            el !== bannerElement
+          ) {
+            const computedStyle = getComputedStyle(el);
+            const borderRadius = computedStyle.borderRadius;
+
+            if (borderRadius && borderRadius !== '0px') {
+              originalStyles.push({
+                element: el,
+                borderRadius: el.style.borderRadius || borderRadius,
+              });
+              el.style.borderRadius = '0px';
+            }
+          }
+        });
+
+        // Allow time for style changes to apply
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
 
       const dataUrl =
         format === 'png'
@@ -302,12 +360,6 @@ export default function BannerAdTab() {
                 }
                 return true;
               },
-              // onclone: (clonedElement) => {
-              //   // Force visible text styles in clone
-              //   clonedElement.style.color = '#000000';
-              //   clonedElement.style.opacity = '1';
-              //   clonedElement.style.mixBlendMode = 'normal';
-              // },
             })
           : await toJpeg(bannerContent, {
               quality: 1,
@@ -318,6 +370,7 @@ export default function BannerAdTab() {
                 color: '#000000 !important',
                 mixBlendMode: 'normal !important',
                 opacity: '1 !important',
+                borderRadius: format === 'jpeg' ? '0px !important' : undefined,
               },
               filter: (node) => {
                 // Remove any hidden elements
@@ -326,11 +379,6 @@ export default function BannerAdTab() {
                 }
                 return true;
               },
-              // onclone: (clonedElement) => {
-              //   clonedElement.style.color = '#000000';
-              //   clonedElement.style.opacity = '1';
-              //   clonedElement.style.mixBlendMode = 'normal';
-              // },
             });
 
       const link = document.createElement('a');
@@ -342,29 +390,95 @@ export default function BannerAdTab() {
     } catch (err) {
       console.error('Error exporting banner:', err);
       showNotification('error', 'Failed to export banner');
-      // } finally {
+    } finally {
+      // Restore all original styles
+      originalStyles.forEach((item) => {
+        item.element.style.borderRadius = item.borderRadius;
+      });
       // setDownloadStates((prev) => ({ ...prev, [format]: false }));
     }
   };
 
-  // Helper function: Capture multiple frames from the banner element
   const captureFrames = async (numFrames = 10, delay = 200) => {
     const bannerContent = document.getElementById('banner-ad-content-wrapper');
     if (!bannerContent) return [];
 
     const frames: string[] = [];
 
-    // // Create a clone with forced dimensions and styles
-    // const clone = bannerContent.cloneNode(true) as HTMLElement;
-    // clone.style.position = 'fixed';
-    // clone.style.left = '-9999px';
-    // clone.style.zIndex = '99999';
-    // clone.style.visibility = 'hidden';
-    // document.body.appendChild(clone);
+    // Find all elements that might have border-radius
+    const bannerElement = bannerContent.querySelector('.banner') as HTMLElement;
+    const bannerContainer = bannerContent.querySelector(
+      '.banner-container'
+    ) as HTMLElement;
+
+    // Save original styles
+    const originalStyles: { element: HTMLElement; borderRadius: string }[] = [];
+
+    // Function to collect elements and their original styles
+    const collectElementsWithBorderRadius = (parentElement: HTMLElement) => {
+      // Get all elements within the parent
+      const elements = parentElement.querySelectorAll('*');
+
+      // Check each element for border-radius
+      elements.forEach((el) => {
+        if (el instanceof HTMLElement) {
+          const computedStyle = getComputedStyle(el);
+          const borderRadius = computedStyle.borderRadius;
+
+          // If element has border-radius, save it
+          if (borderRadius && borderRadius !== '0px') {
+            originalStyles.push({
+              element: el,
+              borderRadius: el.style.borderRadius || borderRadius,
+            });
+
+            // Set border-radius to 0
+            el.style.borderRadius = '0px';
+          }
+        }
+      });
+    };
 
     try {
+      // Handle specific known elements
+      if (bannerElement) {
+        originalStyles.push({
+          element: bannerElement,
+          borderRadius:
+            bannerElement.style.borderRadius ||
+            getComputedStyle(bannerElement).borderRadius,
+        });
+        bannerElement.style.borderRadius = '0px';
+      }
+
+      if (bannerContainer) {
+        originalStyles.push({
+          element: bannerContainer,
+          borderRadius:
+            bannerContainer.style.borderRadius ||
+            getComputedStyle(bannerContainer).borderRadius,
+        });
+        bannerContainer.style.borderRadius = '0px';
+      }
+
+      // Collect all other elements with border-radius
+      collectElementsWithBorderRadius(bannerContent);
+
+      // Wait for style changes to apply
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
       for (let i = 0; i < numFrames; i++) {
-        const dataUrl = await toPng(bannerContent, {
+        // Re-apply zero border-radius to all elements before each frame capture
+        originalStyles.forEach((item) => {
+          item.element.style.borderRadius = '0px';
+          // Force reflow
+          void item.element.offsetHeight;
+        });
+
+        // Extra wait for styles to apply
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+
+        const dataUrl = await toJpeg(bannerContent, {
           quality: 1,
           backgroundColor: 'transparent',
           pixelRatio: 2,
@@ -373,6 +487,7 @@ export default function BannerAdTab() {
             color: '#000000 !important',
             mixBlendMode: 'normal !important',
             opacity: '1 !important',
+            borderRadius: '0px !important', // Force zero border-radius in style
           },
           filter: (node) => {
             // Remove any hidden elements
@@ -381,23 +496,20 @@ export default function BannerAdTab() {
             }
             return true;
           },
-          // onclone: (clonedElement) => {
-          //   // Force visible text styles in clone
-          //   clonedElement.style.color = '#000000';
-          //   clonedElement.style.opacity = '1';
-          //   clonedElement.style.mixBlendMode = 'normal';
-          // },
         });
+
         frames.push(dataUrl);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     } finally {
-      // document.body.removeChild(clone);
+      // Restore all original styles
+      originalStyles.forEach((item) => {
+        item.element.style.borderRadius = item.borderRadius;
+      });
     }
 
     return frames;
   };
-
   // Download animated GIF using gifshot and a series of captured frames
   const downloadBannerGif = async () => {
     if (!bannerRef.current) {

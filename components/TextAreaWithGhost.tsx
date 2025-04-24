@@ -152,6 +152,19 @@ export const TextareaWithGhost: React.FC<TextareaWithGhostProps> = ({
         }}
         {...rest}
       />
+      {ghostText && (
+        <button
+          onClick={() => {
+            const newEvent = {
+              target: { value: value + ghostText },
+            } as React.ChangeEvent<HTMLTextAreaElement>;
+            onChange?.(newEvent);
+          }}
+          className='absolute right-2 bottom-2 text-sm text-white bg-gray-700 px-2 py-1 rounded  bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition-all duration-300'
+        >
+          Tap to Accept
+        </button>
+      )}
       <motion.p
         className='mt-2 ml-2 text-left text-xs  text-white [text-shadow:none]
 '

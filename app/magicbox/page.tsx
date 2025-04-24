@@ -20,7 +20,7 @@ export default function MagicBox() {
   if (!mounted) return null;
 
   return (
-    <div className='h-screen fixed overflow-y-auto inset-0 bg-gradient-to-br from-gray-900 to-gray-950 text-white p-4 bg-black sm:p-6'>
+    <div className='h-[100dvh] fixed overflow-y-auto inset-0 bg-gradient-to-br from-gray-900 to-gray-950 text-white p-4 bg-black sm:p-6'>
       <div className='max-w-6xl mx-auto'>
         <motion.div
           initial={{ opacity: 0, y: -20 }}

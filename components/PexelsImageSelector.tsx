@@ -228,7 +228,7 @@ export function PexelsImageSelector({
                         onClick={() => !isAtMax && handleImageSelect(image)}
                       >
                         <img
-                          src={image.src.medium}
+                          src={image.src.original}
                           alt={image.alt}
                           className='object-cover w-full h-full'
                         />
@@ -337,7 +337,7 @@ export function PexelsImageSelector({
                 className='relative flex-shrink-0 aspect-video w-44 rounded-md overflow-hidden border border-blue-500/30 group'
               >
                 <img
-                  src={image.src.medium}
+                  src={image.src.original}
                   alt={image.alt}
                   className='object-cover w-full h-full'
                 />

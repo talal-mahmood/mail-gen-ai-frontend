@@ -160,7 +160,7 @@ Let's make it pop!`;
     // Prepare selected images data for the API
     const selectedImagesData = {
       // id: img.id,
-      url: selectedImage ? selectedImage.src.medium : '',
+      url: selectedImage ? selectedImage.src.original : '',
       alt: selectedImage ? selectedImage.alt : '',
       // photographer: img.photographer,
       // photographer_url: img.photographer_url,

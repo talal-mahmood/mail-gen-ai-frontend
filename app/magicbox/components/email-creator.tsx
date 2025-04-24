@@ -151,7 +151,7 @@ export default function EmailCreator() {
     // Prepare selected images data for the API
     const selectedImagesData = selectedImages.map((img) => ({
       // id: img.id,
-      url: img.src.medium || '',
+      url: img.src.original || '',
       alt: img.alt || '',
       // photographer: img.photographer,
       // photographer_url: img.photographer_url,
@@ -457,15 +457,17 @@ export default function EmailCreator() {
                 )}
               </div>
             </div>
-            <div className='w-full h-max mb-6'>
-              <PexelsImageSelector
-                apiKey={process.env.NEXT_PUBLIC_PEXELS_API_KEY!}
-                maxSelection={3}
-                selectionType='multiple'
-                selectedImages={selectedImages}
-                onSelect={setSelectedImages}
-              />
-            </div>
+            {styleType === 'casual' && (
+              <div className='w-full h-max mb-6'>
+                <PexelsImageSelector
+                  apiKey={process.env.NEXT_PUBLIC_PEXELS_API_KEY!}
+                  maxSelection={3}
+                  selectionType='multiple'
+                  selectedImages={selectedImages}
+                  onSelect={setSelectedImages}
+                />
+              </div>
+            )}
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}

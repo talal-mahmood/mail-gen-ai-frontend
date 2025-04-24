@@ -159,3 +159,7 @@ input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
+.force-no-radius {
+  border-radius: 0 !important;
+}
