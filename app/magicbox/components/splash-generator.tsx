@@ -139,18 +139,7 @@ export default function SplashGenerator() {
       processedUrl = `https://${processedUrl}`;
     }
 
-    const initialPrompt = `🎨 Create a visually appealing splash page based on the content from this URL: ${processedUrl}.
-
-Make it exciting, even if the content is minimal. Use clean and modern font styles, adjust font colors for better readability, and enhance key sections with emojis, underlining, or color accents.
-
-Start with a fun headline, a short summary if possible, and include engaging elements like:
-- 🌐 The website title or domain
-- 📄 A catchy tagline or intro
-- 💡 Any standout text or features from the page
-- 🎯 Highlight important keywords
-- ✨ Use vibrant styles to avoid a generic look
-
-Let's make it pop!`;
+    const initialPrompt = `generate splash page`;
 
     const finalPrompt =
       operation === 'start_over' && activeInput === 'url'
