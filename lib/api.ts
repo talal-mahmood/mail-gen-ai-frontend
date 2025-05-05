@@ -166,3 +166,31 @@ export async function callAutocompleteAPI(
     throw error;
   }
 }
+
+export async function getAllConfigs(): Promise<any> {
+  if (!baseUrl) {
+    throw new Error('API base URL is not defined in environment variables');
+  }
+
+  try {
+    // ${baseUrl} (removed for it to work with vercel)
+    const response = await fetch(`${baseUrl}/v1/config_items/`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      // body: JSON.stringify(requestData),
+    });
+
+    if (!response.ok) {
+      const errorData = (await response.json()) || (await response.text());
+      throw new Error(errorData.detail || 'Failed to get all configs');
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error('API call error:', error);
+    throw error;
+  }
+}

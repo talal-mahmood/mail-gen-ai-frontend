@@ -6,7 +6,7 @@ import BannerAdTab from './banner-ad';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
-export default function CreatorDashboard() {
+export default function CreatorDashboard({ config }: { config: any }) {
   const [activeTab, setActiveTab] = useState('hercu');
 
   return (
@@ -52,7 +52,7 @@ export default function CreatorDashboard() {
             display: activeTab === 'hercu' ? 'block' : 'none',
           }}
         >
-          <HercuBlurbTab />
+          <HercuBlurbTab config={config.blurb} />
         </motion.div>
 
         <motion.div
@@ -68,7 +68,7 @@ export default function CreatorDashboard() {
             display: activeTab === 'banner' ? 'block' : 'none',
           }}
         >
-          <BannerAdTab />
+          <BannerAdTab config={config.banner} />
         </motion.div>
       </div>
     </Tabs>

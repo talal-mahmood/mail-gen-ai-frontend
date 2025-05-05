@@ -21,7 +21,10 @@ import { Notification, useNotification } from '@/components/ui/notification';
 
 import { PexelsImageSelector } from '@/components/PexelsImageSelector';
 
-export default function EmailCreator() {
+export default function EmailCreator({ config }: { config: any }) {
+  useEffect(() => {
+    console.log('The config is: ', config);
+  }, [config]);
   const [prompt, setPrompt] = useState('');
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -358,7 +361,8 @@ export default function EmailCreator() {
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Tell us your pitch – let&apos;s make email gold!
+                  {config.heading ||
+                    `Tell us your pitch – let's make email gold!`}
                 </button>
 
                 {/* OR separator (optional) */}
@@ -374,7 +378,8 @@ export default function EmailCreator() {
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Just give us the link — we&apos;ll take it from there
+                  {config.subheading ||
+                    `Just give us the link — we'll take it from there`}
                 </button>
 
                 {/* Animated underline - only visible on desktop */}
@@ -410,7 +415,10 @@ export default function EmailCreator() {
                   ghostText={hasMinimumInput(prompt) ? ghostText : ''}
                   onChange={handlePromptChange}
                   onKeyDown={handleKeyDown}
-                  placeholder="Type your promo or paste your ad. We'll sprinkle AI magic on it..."
+                  placeholder={
+                    config.placeholder ||
+                    `Type your promo or paste your ad. We'll sprinkle AI magic on it...`
+                  }
                   rows={3}
                 />
               </motion.div>

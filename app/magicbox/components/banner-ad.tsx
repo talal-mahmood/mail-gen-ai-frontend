@@ -21,7 +21,10 @@ import { Notification, useNotification } from '@/components/ui/notification';
 import { toPng, toJpeg } from 'html-to-image';
 import gifshot from 'gifshot';
 
-export default function BannerAdTab() {
+export default function BannerAdTab({ config }: { config: any }) {
+  useEffect(() => {
+    console.log('The config is: ', config);
+  }, [config]);
   const [prompt, setPrompt] = useState('');
   const [url, setUrl] = useState('');
   const [urlError, setUrlError] = useState('');
@@ -631,7 +634,7 @@ export default function BannerAdTab() {
                 htmlFor='prompt'
                 className='block mb-2 font-semibold text-blue-300'
               >
-                Describe your banner (Optional)
+                {config.heading || `Describe your banner (Optional)`}
               </Label>
               <TextareaWithGhost
                 id='prompt'
@@ -639,7 +642,10 @@ export default function BannerAdTab() {
                 ghostText={hasMinimumInput(prompt) ? ghostText : ''}
                 onChange={handlePromptChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Type your pitch or promo — we'll blurbify it..."
+                placeholder={
+                  config.placeholder ||
+                  `Type your pitch or promo — we'll blurbify it...`
+                }
                 rows={3}
               />
             </div>

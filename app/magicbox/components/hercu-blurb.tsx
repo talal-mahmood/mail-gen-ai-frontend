@@ -12,7 +12,10 @@ import { TextareaWithGhost } from '@/components/TextAreaWithGhost';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Notification, useNotification } from '@/components/ui/notification';
 
-export default function HercuBlurbTab() {
+export default function HercuBlurbTab({ config }: { config: any }) {
+  useEffect(() => {
+    console.log('The config is: ', config);
+  }, [config]);
   const [prompt, setPrompt] = useState('');
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -316,7 +319,7 @@ export default function HercuBlurbTab() {
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Describe your offer, we&apos;ll blurb it up!
+                  {config.heading || `Describe your offer, we'll blurb it up!`}
                 </button>
 
                 {/* OR separator */}
@@ -332,7 +335,7 @@ export default function HercuBlurbTab() {
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Give us a link — we&apos;ll do the rest
+                  {config.subheading || `Give us a link — we'll do the rest`}
                 </button>
               </div>
 
@@ -368,7 +371,10 @@ export default function HercuBlurbTab() {
                   ghostText={hasMinimumInput(prompt) ? ghostText : ''}
                   onChange={handlePromptChange}
                   onKeyDown={handleKeyDown}
-                  placeholder="Type your pitch or promo — we'll blurbify it..."
+                  placeholder={
+                    config.placeholder ||
+                    `Type your pitch or promo — we'll blurbify it...`
+                  }
                   rows={3}
                 />
               </motion.div>

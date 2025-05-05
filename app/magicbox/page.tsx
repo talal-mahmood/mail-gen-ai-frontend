@@ -7,13 +7,54 @@ import EmailCreator from './components/email-creator';
 import BannerBuilder from './components/banner-builder';
 import { Sparkles, Mail, ImageIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getAllConfigs } from '@/lib/api';
+
+type Config = {
+  placeholder: string;
+  heading: string;
+  subheading: string;
+};
+
+type Configs = {
+  splash_page: Config;
+  email: Config;
+  banner: Config;
+  blurb: Config;
+};
 
 export default function MagicBox() {
   const [activeTab, setActiveTab] = useState('splash');
   const [mounted, setMounted] = useState(false);
+  const [configs, setConfigs] = useState<Configs>({
+    splash_page: {
+      placeholder: '',
+      heading: '',
+      subheading: '',
+    },
+    email: {
+      placeholder: '',
+      heading: '',
+      subheading: '',
+    },
+    banner: {
+      placeholder: '',
+      heading: '',
+      subheading: '',
+    },
+    blurb: {
+      placeholder: '',
+      heading: '',
+      subheading: '',
+    },
+  });
 
   // Prevent hydration mismatch
   useEffect(() => {
+    const fetchData = async () => {
+      const allConfigs = await getAllConfigs();
+      setConfigs(allConfigs);
+    };
+    fetchData();
     setMounted(true);
   }, []);
 
@@ -80,7 +121,7 @@ export default function MagicBox() {
                 activeTab === 'splash' ? 'block' : 'hidden'
               }`}
             >
-              <SplashGenerator />
+              <SplashGenerator config={configs.splash_page} />
             </motion.div>
 
             <motion.div
@@ -91,7 +132,7 @@ export default function MagicBox() {
                 activeTab === 'email' ? 'block' : 'hidden'
               }`}
             >
-              <EmailCreator />
+              <EmailCreator config={configs.email} />
             </motion.div>
 
             <motion.div
@@ -102,7 +143,9 @@ export default function MagicBox() {
                 activeTab === 'banner' ? 'block' : 'hidden'
               }`}
             >
-              <BannerBuilder />
+              <BannerBuilder
+                config={{ banner: configs.banner, blurb: configs.blurb }}
+              />
             </motion.div>
           </div>
         </Tabs>

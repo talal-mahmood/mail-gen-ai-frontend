@@ -27,7 +27,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Notification, useNotification } from '@/components/ui/notification';
 import { PexelsImageSelector } from '@/components/PexelsImageSelector';
 
-export default function SplashGenerator() {
+export default function SplashGenerator({ config }: { config: any }) {
+  useEffect(() => {
+    console.log('The config is: ', config);
+  }, [config]);
   const [id, setId] = useState('');
   const [query, setQuery] = useState('');
   const [styleType, setStyleType] = useState('casual');
@@ -312,7 +315,7 @@ export default function SplashGenerator() {
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Tell us your vision – let&apos;s build it!
+                  {config.heading || `Tell us your vision – let's build it!`}
                 </button>
 
                 {/* OR separator */}
@@ -328,7 +331,8 @@ export default function SplashGenerator() {
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
-                  Just provide a URL — we&apos;ll create from there
+                  {config.subheading ||
+                    `Just provide a URL — we'll create from there`}
                 </button>
 
                 {/* Animated underline - only visible on desktop */}
@@ -370,7 +374,10 @@ export default function SplashGenerator() {
                   ghostText={hasMinimumInput(query) ? ghostText : ''}
                   onChange={handleQueryChange}
                   onKeyDown={handleKeyDown}
-                  placeholder={`Design your digital happy place – include colors, emoji’s layout, etc. … go wild!`}
+                  placeholder={
+                    config.placeholder ||
+                    `Design your digital happy place – include colors, emoji’s layout, etc. … go wild!`
+                  }
                   rows={3}
                 />
               </motion.div>
@@ -390,9 +397,7 @@ export default function SplashGenerator() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value='casual'>Bold and Flashy</SelectItem>
-                    <SelectItem value='professional'>
-                      Clean & Corporate
-                    </SelectItem>
+                    <SelectItem value='professional'>Big and Bold</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

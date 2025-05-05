@@ -23,6 +23,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Image,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Notification, useNotification } from '@/components/ui/notification';
@@ -145,20 +146,21 @@ export function PexelsImageSelector({
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-2'>
               <div className='p-2 rounded-full bg-blue-500/20'>
-                <Search className='w-5 h-5 text-blue-400' />
+                <Image className='w-5 h-5 text-blue-400' />
               </div>
-              <span className='font-medium text-blue-300'>
-                {selectedImages.length > 0
-                  ? `${
-                      selectionType === 'single'
-                        ? 'Change Image'
-                        : `Manage Selection (${selectedImages.length}/${maxSelection})`
-                    }`
-                  : `Add Image${
-                      selectionType === 'multiple' ? 's' : ''
-                    } from Pexels`}
-              </span>
+
+              {/* Use a generic image label with an icon */}
+              <div className='flex items-center gap-1'>
+                <span className='font-medium text-blue-300'>
+                  {selectedImages.length > 0
+                    ? selectionType === 'single'
+                      ? 'Change image'
+                      : `Manage selection (${selectedImages.length}/${maxSelection})`
+                    : `Add image${selectionType === 'multiple' ? 's' : ''}`}
+                </span>
+              </div>
             </div>
+
             <ChevronDown
               className={`w-5 h-5 text-blue-300 transition-transform ${
                 showPexelsSection ? 'rotate-180' : ''
