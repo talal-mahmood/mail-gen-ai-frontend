@@ -352,44 +352,48 @@ export default function EmailCreator({ config }: { config: any }) {
           >
             <div className='w-max small:w-full relative mb-6'>
               <div className='flex small:flex-col flex-row gap-4 small:gap-0 items-center justify-between w-full relative'>
-                {/* Tabs */}
+                {/* Text Tab */}
                 <button
                   onClick={() => setActiveInput('text')}
-                  className={`relative z-10 px-4 py-2 transition-all duration-300 w-full sm:w-auto text-center ${
-                    activeInput === 'text'
-                      ? 'text-blue-400 font-semibold'
-                      : 'text-gray-400 hover:text-gray-300'
-                  }`}
+                  className={`
+        relative z-10 px-4 py-2 transition-all duration-300 w-full sm:w-auto text-center
+        ${
+          activeInput === 'text'
+            ? 'text-blue-400 font-semibold after:scale-x-100'
+            : 'text-gray-400 hover:text-gray-300 after:scale-x-0'
+        }
+        after:content-[''] after:absolute after:bottom-0 after:left-0
+        after:h-[2px] after:w-full after:bg-blue-400
+        after:origin-left after:transition-transform after:duration-300
+      `}
                 >
                   {config.heading ||
                     `Tell us your pitch – let's make email gold!`}
                 </button>
 
-                {/* OR separator (optional) */}
+                {/* OR separator */}
                 <div className='text-gray-500 font-medium select-none'>
                   - OR -
                 </div>
 
+                {/* URL Tab */}
                 <button
                   onClick={() => setActiveInput('url')}
-                  className={`relative z-10 px-4 py-2 transition-all duration-300 w-full sm:w-auto text-center ${
-                    activeInput === 'url'
-                      ? 'text-blue-400 font-semibold'
-                      : 'text-gray-400 hover:text-gray-300'
-                  }`}
+                  className={`
+        relative z-10 px-4 py-2 transition-all duration-300 w-full sm:w-auto text-center
+        ${
+          activeInput === 'url'
+            ? 'text-blue-400 font-semibold after:scale-x-100'
+            : 'text-gray-400 hover:text-gray-300 after:scale-x-0'
+        }
+        after:content-[''] after:absolute after:bottom-0 after:left-0
+        after:h-[2px] after:w-full after:bg-blue-400
+        after:origin-left after:transition-transform after:duration-300
+      `}
                 >
                   {config.subheading ||
                     `Just give us the link — we'll take it from there`}
                 </button>
-
-                {/* Animated underline - only visible on desktop */}
-                <div
-                  className='absolute bottom-0 h-[2px] bg-blue-400 transition-all duration-300 small:hidden block'
-                  style={{
-                    left: activeInput === 'text' ? '0%' : 'calc(100% - 360px)',
-                    width: activeInput === 'text' ? '336px' : '356px',
-                  }}
-                ></div>
               </div>
             </div>
 
