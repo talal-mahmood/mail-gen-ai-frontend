@@ -441,14 +441,14 @@ export default function EmailCreator({ config }: { config: any }) {
                   <SelectTrigger className='w-full p-3 bg-gray-800 border border-gray-600 text-white'>
                     <SelectValue placeholder='Select style' />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className='bg-gray-800 text-white max-h-[300px]'>
                     <SelectItem value='casual'>
-                      {config.cozytype ||
+                      {config.cozystyle ||
                         `Bold & Flashy Marketing Magic - more likely to land in
                       Gmail's Promotions inbox`}
                     </SelectItem>
                     <SelectItem value='professional'>
-                      {config.boldtype ||
+                      {config.boldstyle ||
                         `Cozy & Personal human tone - better chance of landing in
                       Gmail's Primary inbox`}
                     </SelectItem>

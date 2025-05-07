@@ -408,12 +408,12 @@ export default function SplashGenerator({ config }: { config: any }) {
                   <SelectTrigger className='w-full p-3 bg-gray-800 border border-gray-600 text-white'>
                     <SelectValue placeholder='Select style' />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className='bg-gray-800 text-white max-h-[300px]'>
                     <SelectItem value='casual'>
-                      {config.cozystyle || 'Bold and Flashy'}
+                      {config.boldstyle || 'Bold and Flashy'}
                     </SelectItem>
                     <SelectItem value='professional'>
-                      {config.boldstyle || 'Big and Bold'}
+                      {config.cozystyle || 'Big and Bold'}
                     </SelectItem>
                   </SelectContent>
                 </Select>

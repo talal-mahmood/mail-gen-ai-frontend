@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "pm2:deploy": "npm i && npm run build && PORT=3000 pm2 start npm --name 'mail-gen-ai-frontend' -- start",
+    "pm2:redeploy": "npm i && npm run build && pm2 stop mail-gen-ai-frontend && pm2 delete mail-gen-ai-frontend && PORT=3000 pm2 start npm --name 'mail-gen-ai-frontend' -- start"
   },
   "dependencies": {
     "@radix-ui/react-collapsible": "^1.1.4",
