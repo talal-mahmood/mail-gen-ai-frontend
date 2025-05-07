@@ -356,7 +356,7 @@ export default function SplashGenerator({ config }: { config: any }) {
 
             {activeInput === 'text' && (
               <motion.div
-                className='mb-6 relative space-y-6'
+                className='mb-6 relative'
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
@@ -388,6 +388,11 @@ export default function SplashGenerator({ config }: { config: any }) {
                   }
                   rows={3}
                 />
+                <div className='w-full flex justify-end -mt-4'>
+                  <a href='' className='z-10'>
+                    💡 Prompt Idea
+                  </a>
+                </div>
               </motion.div>
             )}
 
@@ -397,15 +402,19 @@ export default function SplashGenerator({ config }: { config: any }) {
                   htmlFor='style_type'
                   className='block mb-2 font-semibold text-blue-300'
                 >
-                  Design Style:
+                  {config.styleheading || 'Design Style:'}
                 </Label>
                 <Select value={styleType} onValueChange={setStyleType}>
                   <SelectTrigger className='w-full p-3 bg-gray-800 border border-gray-600 text-white'>
                     <SelectValue placeholder='Select style' />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='casual'>Bold and Flashy</SelectItem>
-                    <SelectItem value='professional'>Big and Bold</SelectItem>
+                    <SelectItem value='casual'>
+                      {config.cozystyle || 'Bold and Flashy'}
+                    </SelectItem>
+                    <SelectItem value='professional'>
+                      {config.boldstyle || 'Big and Bold'}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -414,7 +423,7 @@ export default function SplashGenerator({ config }: { config: any }) {
                   htmlFor='button_url'
                   className='block mb-2 font-semibold text-blue-300'
                 >
-                  Destination URL:
+                  {config.urlheading || 'Destination URL:'}
                 </Label>
                 <Input
                   id='button_url'
@@ -504,6 +513,7 @@ export default function SplashGenerator({ config }: { config: any }) {
                 placeholder={`Describe what you want your page to look like…`}
                 rows={3}
               />
+
               <div className='w-full h-max my-6'>
                 <PexelsImageSelector
                   apiKey={process.env.NEXT_PUBLIC_PEXELS_API_KEY!}

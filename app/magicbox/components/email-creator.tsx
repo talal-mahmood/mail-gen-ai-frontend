@@ -399,7 +399,7 @@ export default function EmailCreator({ config }: { config: any }) {
 
             {activeInput === 'text' && (
               <motion.div
-                className='mb-6 relative space-y-6'
+                className='mb-6 relative'
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
@@ -425,12 +425,17 @@ export default function EmailCreator({ config }: { config: any }) {
                   }
                   rows={3}
                 />
+                <div className='w-full flex justify-end -mt-4'>
+                  <a href='' className='z-10'>
+                    💡 Prompt Idea
+                  </a>
+                </div>
               </motion.div>
             )}
             <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 items-end'>
               <div className='mb-6'>
                 <Label className='block mb-2 font-semibold text-blue-300'>
-                  Pick Your Email Vibe
+                  {config.styleheading || 'Pick Your Email Vibe'}
                 </Label>
                 <Select value={styleType} onValueChange={setStyleType}>
                   <SelectTrigger className='w-full p-3 bg-gray-800 border border-gray-600 text-white'>
@@ -438,12 +443,14 @@ export default function EmailCreator({ config }: { config: any }) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value='casual'>
-                      Bold & Flashy Marketing Magic - more likely to land in
-                      Gmail&apos;s Promotions inbox
+                      {config.cozytype ||
+                        `Bold & Flashy Marketing Magic - more likely to land in
+                      Gmail's Promotions inbox`}
                     </SelectItem>
                     <SelectItem value='professional'>
-                      Cozy & Personal human tone - better chance of landing in
-                      Gmail&apos;s Primary inbox
+                      {config.boldtype ||
+                        `Cozy & Personal human tone - better chance of landing in
+                      Gmail's Primary inbox`}
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -451,7 +458,8 @@ export default function EmailCreator({ config }: { config: any }) {
               <div className='mb-6'>
                 <Label className='block mb-2 font-semibold text-blue-300'>
                   {activeInput === 'text'
-                    ? 'Link destination — where are we sending folks?'
+                    ? config.urlheading ||
+                      'Link destination — where are we sending folks?'
                     : 'URL'}
                 </Label>
                 <Input

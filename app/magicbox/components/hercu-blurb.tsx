@@ -246,39 +246,39 @@ export default function HercuBlurbTab({ config }: { config: any }) {
     // showManualCopyModal(currentHtml);
   };
 
-  const copyPlainText = () => {
-    // Parse the HTML string into a document
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(currentHtml, 'text/html');
+  // const copyPlainText = () => {
+  //   // Parse the HTML string into a document
+  //   const parser = new DOMParser();
+  //   const doc = parser.parseFromString(currentHtml, 'text/html');
 
-    // Remove all <style> elements and any external stylesheet links
-    doc
-      .querySelectorAll('style, link[rel="stylesheet"]')
-      .forEach((el) => el.remove());
+  //   // Remove all <style> elements and any external stylesheet links
+  //   doc
+  //     .querySelectorAll('style, link[rel="stylesheet"]')
+  //     .forEach((el) => el.remove());
 
-    // Optionally, remove inline style attributes if needed:
-    doc
-      .querySelectorAll('[style]')
-      .forEach((el) => el.removeAttribute('style'));
+  //   // Optionally, remove inline style attributes if needed:
+  //   doc
+  //     .querySelectorAll('[style]')
+  //     .forEach((el) => el.removeAttribute('style'));
 
-    // Extract plain text from the body (or the whole document as fallback)
-    const plainText = doc.body
-      ? doc.body.innerText
-      : doc.documentElement.innerText;
+  //   // Extract plain text from the body (or the whole document as fallback)
+  //   const plainText = doc.body
+  //     ? doc.body.innerText
+  //     : doc.documentElement.innerText;
 
-    // Copy the plain text to clipboard
-    navigator.clipboard
-      .writeText(plainText)
-      .then(() => {
-        setCopySuccess('Text');
-        setTimeout(() => setCopySuccess(null), 2000);
-        showNotification('success', 'Plain text copied to clipboard!');
-      })
-      .catch((err) => {
-        console.error('Failed to copy:', err);
-        showNotification('error', 'Failed to copy text. Please try again.');
-      });
-  };
+  //   // Copy the plain text to clipboard
+  //   navigator.clipboard
+  //     .writeText(plainText)
+  //     .then(() => {
+  //       setCopySuccess('Text');
+  //       setTimeout(() => setCopySuccess(null), 2000);
+  //       showNotification('success', 'Plain text copied to clipboard!');
+  //     })
+  //     .catch((err) => {
+  //       console.error('Failed to copy:', err);
+  //       showNotification('error', 'Failed to copy text. Please try again.');
+  //     });
+  // };
 
   const openPreviewInNewTab = () => {
     const newTab = window.open('');
@@ -383,6 +383,11 @@ export default function HercuBlurbTab({ config }: { config: any }) {
                   }
                   rows={3}
                 />
+                <div className='w-full flex justify-end -mt-4'>
+                  <a href='' className='z-10'>
+                    💡 Prompt Idea
+                  </a>
+                </div>
               </motion.div>
             )}
 
@@ -523,7 +528,7 @@ export default function HercuBlurbTab({ config }: { config: any }) {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Button
+                  {/* <Button
                     onClick={copyPlainText}
                     className='bg-green-600 hover:bg-green-700 transition-all duration-200 relative'
                   >
@@ -538,7 +543,7 @@ export default function HercuBlurbTab({ config }: { config: any }) {
                         Copied!
                       </motion.span>
                     )}
-                  </Button>
+                  </Button> */}
                 </motion.div>
                 <motion.div
                   whileHover={{ scale: 1.05 }}

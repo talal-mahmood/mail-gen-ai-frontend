@@ -648,6 +648,11 @@ export default function BannerAdTab({ config }: { config: any }) {
                 }
                 rows={3}
               />
+              <div className='w-full flex justify-end -mt-4'>
+                <a href='' className='z-10'>
+                  💡 Prompt Idea
+                </a>
+              </div>
             </div>
             <div className='mb-6'>
               <Label className='block mb-2 font-semibold text-blue-300'>
