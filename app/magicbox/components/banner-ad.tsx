@@ -656,7 +656,7 @@ export default function BannerAdTab({ config }: { config: any }) {
             </div>
             <div className='mb-6'>
               <Label className='block mb-2 font-semibold text-blue-300'>
-                Website URL to link to:
+                {config.urlheading || 'Website URL to link to:'}
               </Label>
               <Input
                 type='url'

@@ -394,7 +394,8 @@ export default function HercuBlurbTab({ config }: { config: any }) {
             <div className='mb-6'>
               <Label className='block mb-2 font-semibold text-blue-300'>
                 {activeInput === 'text'
-                  ? 'The URL that your button or link will direct to:'
+                  ? config.urlheading ||
+                    'The URL that your button or link will direct to:'
                   : ''}
               </Label>
               <Input
