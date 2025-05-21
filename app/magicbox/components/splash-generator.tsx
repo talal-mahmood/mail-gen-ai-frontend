@@ -20,12 +20,20 @@ import {
   ExternalLink,
   X,
   Download,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { callAutocompleteAPI, callSplashGenerateAPI } from '@/lib/api';
 import { TextareaWithGhost } from '@/components/TextAreaWithGhost';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Notification, useNotification } from '@/components/ui/notification';
 import { PexelsImageSelector } from '@/components/PexelsImageSelector';
+import {
+  addToHistory,
+  getFromHistory,
+  getHistoryLength,
+  removeFromHistory,
+} from '@/lib/history';
 
 export default function SplashGenerator({ config }: { config: any }) {
   useEffect(() => {
@@ -43,6 +51,7 @@ export default function SplashGenerator({ config }: { config: any }) {
   const [activeInput, setActiveInput] = useState<'text' | 'url'>('text');
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<any>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   // Notification system
   const { notification, showNotification, hideNotification } =
@@ -181,6 +190,9 @@ export default function SplashGenerator({ config }: { config: any }) {
       setQuery('');
       setId(data.id);
 
+      addToHistory('splash_history', htmlOutput, currentIndex);
+      setCurrentIndex(currentIndex + 1);
+
       showNotification(
         'success',
         operation === 'update'
@@ -282,6 +294,63 @@ export default function SplashGenerator({ config }: { config: any }) {
     const previewUrl = `${baseUrl}/splash/${id}`;
     window.open(previewUrl, '_blank');
   };
+
+  const goForward = () => {
+    const total = getHistoryLength('splash_history');
+
+    if (currentIndex < total - 1) {
+      setCurrentIndex(currentIndex + 1);
+      const history = getFromHistory('splash_history', currentIndex + 1);
+      if (history) {
+        setCurrentHtml(history);
+      }
+    }
+  };
+
+  const goBack = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+      const history = getFromHistory('splash_history', currentIndex - 1);
+      if (history) {
+        setCurrentHtml(history);
+      }
+    }
+  };
+
+  const goToLast = () => {
+    const total = getHistoryLength('splash_history');
+
+    if (currentIndex < total - 1) {
+      setCurrentIndex(total - 1);
+      const history = getFromHistory('splash_history', total - 1);
+      if (history) {
+        setCurrentHtml(history);
+      }
+    }
+  };
+
+  const goToFirst = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(0);
+      const history = getFromHistory('splash_history', 0);
+      if (history) {
+        setCurrentHtml(history);
+      }
+    }
+  };
+
+  useEffect(() => {
+    console.log(
+      'currentIndex: ',
+      currentIndex,
+      getHistoryLength('splash_history')
+    );
+
+    if (currentIndex === 1 && getHistoryLength('splash_history') === 1) {
+      console.log('in here');
+      goToFirst();
+    }
+  }, [currentIndex]);
 
   return (
     <div className='space-y-8 mb-4'>
@@ -573,50 +642,125 @@ export default function SplashGenerator({ config }: { config: any }) {
               <h2 className='text-2xl font-semibold text-blue-300'>
                 Live Preview
               </h2>
-              <div className='flex flex-wrap gap-2'>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    onClick={copyHtmlCode}
-                    className='bg-blue-600 hover:bg-blue-700 transition-all duration-200 relative'
+              <div className='flex flex-col sm:flex-row items-center gap-8 w-full sm:w-auto'>
+                {/* Version Navigation Buttons */}
+                <div className='flex items-center bg-gray-800/50 backdrop-blur-sm rounded-lg p-1 border border-gray-700/50'>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <Copy className='mr-2 h-4 w-4' /> Copy HTML
-                    {copySuccess === 'HTML' && (
-                      <motion.span
-                        className='absolute inset-0 flex items-center justify-center bg-blue-700 text-white'
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                      >
-                        Copied!
-                      </motion.span>
-                    )}
-                  </Button>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    onClick={downloadHtmlFile}
-                    className='bg-green-600 hover:bg-green-700 transition-all duration-200'
+                    <Button
+                      onClick={goToFirst}
+                      disabled={currentIndex <= 0}
+                      variant='ghost'
+                      size='icon'
+                      className='h-8 w-8 rounded-full text-gray-300 hover:text-white hover:bg-blue-500/20 disabled:opacity-30 disabled:pointer-events-none transition-all duration-200'
+                    >
+                      <ChevronLeft className='h-4 w-4' />
+                      <ChevronLeft className='h-4 w-4 -ml-3' />
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <Download className='mr-2 h-4 w-4' /> HTML File
-                  </Button>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    onClick={openPreviewInNewTab}
-                    className='bg-purple-600 hover:bg-purple-700 transition-all duration-200'
+                    <Button
+                      onClick={goBack}
+                      disabled={currentIndex <= 0}
+                      variant='ghost'
+                      size='icon'
+                      className='h-8 w-8 rounded-full text-gray-300 hover:text-white hover:bg-blue-500/20 disabled:opacity-30 disabled:pointer-events-none transition-all duration-200'
+                    >
+                      <ChevronLeft className='h-4 w-4' />
+                    </Button>
+                  </motion.div>
+
+                  <div className='px-2 text-sm text-gray-300 font-medium'>
+                    {currentIndex + 1} /{' '}
+                    {Math.max(getHistoryLength('splash_history'), 1)}
+                  </div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <ExternalLink className='mr-2 h-4 w-4' /> Open in New Tab
-                  </Button>
-                </motion.div>
+                    <Button
+                      onClick={goForward}
+                      disabled={
+                        currentIndex >= getHistoryLength('splash_history') - 1
+                      }
+                      variant='ghost'
+                      size='icon'
+                      className='h-8 w-8 rounded-full text-gray-300 hover:text-white hover:bg-blue-500/20 disabled:opacity-30 disabled:pointer-events-none transition-all duration-200'
+                    >
+                      <ChevronRight className='h-4 w-4' />
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      onClick={goToLast}
+                      disabled={
+                        currentIndex >= getHistoryLength('splash_history') - 1
+                      }
+                      variant='ghost'
+                      size='icon'
+                      className='h-8 w-8 rounded-full text-gray-300 hover:text-white hover:bg-blue-500/20 disabled:opacity-30 disabled:pointer-events-none transition-all duration-200'
+                    >
+                      <ChevronRight className='h-4 w-4' />
+                      <ChevronRight className='h-4 w-4 -ml-3' />
+                    </Button>
+                  </motion.div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className='flex flex-wrap gap-2'>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      onClick={copyHtmlCode}
+                      className='bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all duration-200 relative'
+                    >
+                      <Copy className='mr-2 h-4 w-4' /> Copy HTML
+                      {copySuccess === 'HTML' && (
+                        <motion.span
+                          className='absolute inset-0 flex items-center justify-center bg-blue-700 text-white rounded-md'
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          Copied!
+                        </motion.span>
+                      )}
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      onClick={downloadHtmlFile}
+                      className='bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 transition-all duration-200'
+                    >
+                      <Download className='mr-2 h-4 w-4' /> HTML File
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      onClick={openPreviewInNewTab}
+                      className='bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 transition-all duration-200'
+                    >
+                      <ExternalLink className='mr-2 h-4 w-4' /> Open in New Tab
+                    </Button>
+                  </motion.div>
+                </div>
               </div>
             </div>
             <div className='w-full h-[80dvh] sm:h-[80dvh] bg-white rounded-lg overflow-auto'>
@@ -696,6 +840,7 @@ export default function SplashGenerator({ config }: { config: any }) {
                         'info',
                         'Started fresh with a clean slate!'
                       );
+                      removeFromHistory('splash_history');
                     }}
                     className='bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-300'
                   >

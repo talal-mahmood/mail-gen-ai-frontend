@@ -8,6 +8,7 @@ import BannerBuilder from './components/banner-builder';
 import { Sparkles, Mail, ImageIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getAllConfigs } from '@/lib/api';
+import { initHistory } from '@/lib/history';
 
 type Config = {
   placeholder: string;
@@ -50,6 +51,7 @@ export default function MagicBox() {
 
   // Prevent hydration mismatch
   useEffect(() => {
+    initHistory();
     const fetchData = async () => {
       const allConfigs = await getAllConfigs();
       setConfigs(allConfigs);
